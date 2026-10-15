@@ -11,7 +11,7 @@ Selection: held-out (seed-0 val split) mean Pearson corr over the 6 eval ATTRS,
 measured through the SAME env.decode_params machinery. Test set B is never touched.
 
 Smoke:
-  cd /home/rog/Desktop/diffusionF && /home/rog/miniconda3/envs/difflocks/bin/python \
+  python \
     patchlocks/experiments/rebuttal_2027/train_det_z64.py --max_dirs 80 --iters 60 \
     --eval_every 30 --bs 8 --out /tmp/detz_smoke
 Full:

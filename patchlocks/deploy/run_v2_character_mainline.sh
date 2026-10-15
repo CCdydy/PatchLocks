@@ -24,8 +24,8 @@ set -euo pipefail
 # Step2 and render auto-run only when their inputs are provided; otherwise this
 # produces a geometry-only init (no multi-view direction fit).
 
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"
-PY="${PY:-/home/rog/miniconda3/envs/difflocks/bin/python}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+PY="${PY:-python}"
 PACK="${PACK:-}"
 OUTDIR="${OUTDIR:-}"
 

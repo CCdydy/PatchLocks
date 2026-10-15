@@ -3,8 +3,8 @@
 # render each mesh in the same frame as our fur (surface column of the grid).
 # Needs (from MPI, in _baselines/genzoo/data/): genzoo_1M.ckpt, smal_plus.pkl.
 set -euo pipefail
-ROOT=/home/rog/Desktop/diffusionF; cd "$ROOT/_baselines/genzoo"
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)}"; cd "$ROOT/_baselines/genzoo"
+PY="${PY:-python}"
 BL="$ROOT/patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 
 for f in data/genzoo_1M.ckpt data/smal_plus.pkl; do

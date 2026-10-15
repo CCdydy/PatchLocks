@@ -9,7 +9,7 @@ from train 210000-211599, B 610000+, all render seeds).
 Question: does the fair-baseline result (diffusion > deterministic > scalar-synth) HOLD OOD, or
 does the advantage collapse when the prior is asked for regimes it never trained on?
 
-Run: /home/rog/miniconda3/envs/difflocks/bin/python \
+Run: python \
   patchlocks/experiments/rebuttal_2027/gen_ood_patches.py --n_per 20 --out <dir>
 """
 import os, sys, argparse

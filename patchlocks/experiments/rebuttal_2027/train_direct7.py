@@ -9,7 +9,7 @@ the seed-0 val split mean Pearson corr; test set B never touched.
 primitive synthesis uses the fixed paper radius policy for every arm.)
 
 Smoke:
-  cd /home/rog/Desktop/diffusionF && /home/rog/miniconda3/envs/difflocks/bin/python \
+  python \
     patchlocks/experiments/rebuttal_2027/train_direct7.py --max_dirs 80 --iters 60 \
     --eval_every 30 --bs 16 --out /tmp/d7_smoke
 Full:

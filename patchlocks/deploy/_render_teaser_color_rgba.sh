@@ -4,7 +4,7 @@
 # BSDF so appearance cannot hide or exaggerate cross-animal fur geometry.
 set -euo pipefail
 
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 

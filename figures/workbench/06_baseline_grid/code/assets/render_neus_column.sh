@@ -2,9 +2,9 @@
 # Render the NeuS baseline column (NF's released neus.obj) for all 4 animals,
 # 4 turntable views each, in the SAME frame as our fur results (clay surface).
 set -euo pipefail
-ROOT=/home/rog/Desktop/diffusionF; cd "$ROOT"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)}"; cd "$ROOT"
 BL=patchlocks/third_party/blender-4.5.10-linux-x64/blender
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+PY="${PY:-python}"
 NFB=patchlocks/datasets/neuralfur/official_results/extracted/neuralfur
 declare -A DIR=( [beagle]=beagle_dog [whiteTiger]=whiteTiger [panda]=panda [cat]=cat )
 

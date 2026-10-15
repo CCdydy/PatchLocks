@@ -2,8 +2,9 @@
 # B post-render chain (CONTRACT.md section B): bake -> pose -> QA -> FREEZE -> eval_3arm -> bootstrap.
 # Run AFTER the Blender render of testB_renders completes (160 dirs x rgb_0..3 + cameras.json + patch.npz).
 set -euo pipefail
-cd /home/rog/Desktop/diffusionF
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+cd "$ROOT"
+PY="${PY:-python}"
 R=patchlocks/experiments/rebuttal_2027/testB_renders
 E=patchlocks/experiments/rebuttal_2027
 

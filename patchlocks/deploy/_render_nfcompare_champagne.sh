@@ -3,7 +3,7 @@
 # champagne melanin material (identical treatment; only the strand sets differ).
 # Replaces the washed flat material that hid fiber detail on both sides.
 set -euo pipefail
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"; cd "$ROOT"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"; cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 NF="patchlocks/deploy/nf_official_render"

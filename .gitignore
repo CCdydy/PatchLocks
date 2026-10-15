@@ -1,0 +1,39 @@
+# Python / OS
+__pycache__/
+*.pyc
+.DS_Store
+
+# Pipeline outputs
+outputs/
+
+# Data and weights (see data/manifest.txt; link with scripts/link_data.sh)
+/patchlocks/datasets/v16/e2a_cw15/v14_best.pt
+/patchlocks/datasets/v16/e2a_cw15/b3_fuser.pt
+/patchlocks/models/fur_strand_codec_v6upright.pt
+/patchlocks/v2_locked/V10_PATCH_STABLE
+/patchlocks/datasets/v14/e1_full_sm80/v14_best.pt
+/patchlocks/datasets/v14/e1_full_sm80/b3_fuser.pt
+/patchlocks/experiments/rebuttal_2027/det_z64/det_z64_best.pt
+/patchlocks/experiments/rebuttal_2027/direct7/direct7_best.pt
+/patchlocks/datasets/v11_longfur/renders_mv
+/patchlocks/experiments/rebuttal_2027/testB_patches
+/patchlocks/experiments/rebuttal_2027/testB_renders
+/patchlocks/experiments/rebuttal_2027/testB_prep
+/patchlocks/experiments/rebuttal_2027/ood_patches
+/patchlocks/experiments/rebuttal_2027/ood_renders
+/patchlocks/experiments/rebuttal_2027/ood_prep
+/patchlocks/experiments/rebuttal_2027/grid5_B
+/patchlocks/deploy/neuralfur_beagle_official
+/patchlocks/deploy/neuralfur_whiteTiger_official
+/patchlocks/deploy/neuralfur_panda_official
+/patchlocks/deploy/neuralfur_cat_official
+/patchlocks/deploy/neuralfur_beagle_geopatch_fine/geodesic_patchpack.npz
+/patchlocks/deploy/neuralfur_whiteTiger_geopatch_fine/geodesic_patchpack.npz
+/patchlocks/deploy/neuralfur_panda_geopatch_fine/geodesic_patchpack.npz
+/patchlocks/deploy/neuralfur_cat_geopatch_fine/geodesic_patchpack.npz
+/patchlocks/datasets/neuralfur
+/patchlocks/third_party/blender-4.5.10-linux-x64
+/v2_results/refine_v16_fluffy
+/v2_results/refine_v16_4animals
+/patchlocks/deploy/nf_official_render
+/patchlocks/datasets/v16/v16_visual_gate_agx

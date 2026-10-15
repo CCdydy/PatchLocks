@@ -30,9 +30,9 @@ set -euo pipefail
 # new model's length character (that is the point of a stronger diffusion).
 # =============================================================================
 
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$ROOT"
-PY="${PY:-/home/rog/miniconda3/envs/difflocks/bin/python}"
+PY="${PY:-python}"
 BLENDER="${BLENDER:-patchlocks/third_party/blender-4.5.10-linux-x64/blender}"
 WRAP="patchlocks/deploy/run_v2_character_mainline.sh"
 
@@ -40,9 +40,10 @@ WRAP="patchlocks/deploy/run_v2_character_mainline.sh"
 # After training: set GEO_DIR + MODEL_PATH to the new model. The backend is inferred
 # for locked model families so v16/MVFuser checkpoints do not accidentally run
 # through the older V10 infer path.
-# (Defaults below reproduce the V10 reference run so the script is runnable now.)
-export GEO_DIR="${GEO_DIR:-patchlocks/datasets/V10_PATCH_STABLE}"     # <-- new model dir
-export MODEL_PATH="${MODEL_PATH:-$GEO_DIR/stage3_model.pt}"           # <-- new checkpoint
+# (Defaults below are the v16 paper checkpoint, so a bare run reproduces the paper grooms.
+#  For the older V10 reference run: GEO_DIR=patchlocks/v2_locked/V10_PATCH_STABLE.)
+export GEO_DIR="${GEO_DIR:-patchlocks/datasets/v16/e2a_cw15}"         # <-- new model dir
+export MODEL_PATH="${MODEL_PATH:-$GEO_DIR/v14_best.pt}"               # <-- new checkpoint
 if [[ -z "${DIFFUSION_BACKEND:-}" ]]; then
   if [[ "$GEO_DIR" == *"v16"* || "$MODEL_PATH" == *"v16"* ]]; then
     export DIFFUSION_BACKEND="v16"
@@ -59,9 +60,9 @@ export USE_V16_FINAL_RECIPE="${USE_V16_FINAL_RECIPE:-auto}"      # auto | 0 | 1
 export V16_RECIPE_PROFILE="${V16_RECIPE_PROFILE:-final}"          # final | v10_volume
 # ========================================================================
 
-OUTROOT="${OUTROOT:-/home/rog/Desktop/v2_results/refine_v5_swap}"     # new dir; never clobbers refine_v4_light
+OUTROOT="${OUTROOT:-$ROOT/outputs/refine_v16}"                      # never clobbers the archived paper grooms
 export TARGET_STRANDS="${TARGET_STRANDS:-1200000}"                    # LOCKED paper density budget (NOT 7.9M)
-ANIMALS="${ANIMALS:-beagle whiteTiger panda}"
+ANIMALS="${ANIMALS:-beagle whiteTiger panda cat}"
 
 # ---- per-animal INPUTS (structural, diffusion-independent) ----
 declare -A PACK MESH GEOPACK DATA_DIR

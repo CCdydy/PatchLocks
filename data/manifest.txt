@@ -1,0 +1,50 @@
+# PatchLocks data manifest
+#
+# Every path below is relative to the repository root, which is where the code expects it.
+# None of these files are tracked by git. `scripts/link_data.sh <DATA_ROOT>` symlinks each one
+# from a data root that uses the same layout (for example, an extracted release bundle).
+#
+# Columns: <category> <relative path> <approx size> <used by>
+# Categories:
+#   weights     model checkpoints (to be published as GitHub Release assets)
+#   ours        data we generated: synthetic patches/renders, test sets, final grooms
+#   derived     preprocessed from third-party captures (NeuralFur / ARTEMIS); redistribution follows their licenses
+#   thirdparty  third-party releases used as-is (NeuralFur official results, Blender)
+
+# ---- model weights ----
+weights     patchlocks/datasets/v16/e2a_cw15/v14_best.pt                          148M  paper diffusion model (all whole-animal results, Table 1 "ours")
+weights     patchlocks/datasets/v16/e2a_cw15/b3_fuser.pt                          8.6M  multi-view fuser paired with the paper model
+weights     patchlocks/models/fur_strand_codec_v6upright.pt                       6.8M  strand codec (z64 <-> strand), shared by all arms
+weights     patchlocks/v2_locked/V10_PATCH_STABLE                                 72M   single-view baseline (Table 1 "1-view" column)
+weights     patchlocks/datasets/v14/e1_full_sm80/v14_best.pt                      148M  E1 recipe ablation (supp. tab:recipe middle row)
+weights     patchlocks/datasets/v14/e1_full_sm80/b3_fuser.pt                      8.6M  fuser paired with E1
+weights     patchlocks/experiments/rebuttal_2027/det_z64/det_z64_best.pt          152M  deterministic-latent baseline (Table 2)
+weights     patchlocks/experiments/rebuttal_2027/direct7/direct7_best.pt          6.5M  scalar-regression baseline (Table 2)
+
+# ---- synthetic training / evaluation data ----
+ours        patchlocks/datasets/v11_longfur/renders_mv                            13G   training corpus (1,600 patches x 4 views); its 80-patch validation split = Table 1
+ours        patchlocks/experiments/rebuttal_2027/testB_patches                    979M  frozen in-distribution test set (n=160), strands
+ours        patchlocks/experiments/rebuttal_2027/testB_renders                    1.3G  frozen in-distribution test set, renders (Table 2 ID column)
+ours        patchlocks/experiments/rebuttal_2027/testB_prep                       92K   test-set generation bookkeeping
+ours        patchlocks/experiments/rebuttal_2027/ood_patches                      460M  frozen extrapolation test set (n=80), strands
+ours        patchlocks/experiments/rebuttal_2027/ood_renders                      613M  frozen extrapolation test set, renders (Table 2 EXT column)
+ours        patchlocks/experiments/rebuttal_2027/ood_prep                         52K   test-set generation bookkeeping
+ours        patchlocks/experiments/rebuttal_2027/grid5_B                          91M   per-arm patch renders for fig_baselines_qual
+
+# ---- real animals: preprocessed inputs for the whole-animal pipeline ----
+derived     patchlocks/deploy/neuralfur_beagle_official                           2.4G  beagle multi-view capture, surface patch pack, pose sidecar
+derived     patchlocks/deploy/neuralfur_whiteTiger_official                       3.1G  white tiger, same
+derived     patchlocks/deploy/neuralfur_panda_official                            7.0G  panda, same
+derived     patchlocks/deploy/neuralfur_cat_official                              2.4G  cat, same
+derived     patchlocks/deploy/neuralfur_beagle_geopatch_fine/geodesic_patchpack.npz      18M  geodesic patch cover (Step2 / grow)
+derived     patchlocks/deploy/neuralfur_whiteTiger_geopatch_fine/geodesic_patchpack.npz  16M
+derived     patchlocks/deploy/neuralfur_panda_geopatch_fine/geodesic_patchpack.npz       17M
+derived     patchlocks/deploy/neuralfur_cat_geopatch_fine/geodesic_patchpack.npz         16M
+thirdparty  patchlocks/datasets/neuralfur                                         8.7G  NeuralFur released furless meshes + grooms, ARTEMIS panda capture
+thirdparty  patchlocks/third_party/blender-4.5.10-linux-x64                       1.2G  Blender 4.5.10 LTS (renderer for all figures)
+
+# ---- archived paper outputs (figure inputs; reproducible with the pipeline) ----
+ours        v2_results/refine_v16_fluffy                                          5.3G  final grooms + renders used by the paper figures and tab:animals
+ours        v2_results/refine_v16_4animals                                        5.1G  grooms used by supp. tab:seams and the grow-scaling table
+ours        patchlocks/deploy/nf_official_render                                  3.4M  NeuralFur-vs-ours comparison renders (Fig. 3)
+ours        patchlocks/datasets/v16/v16_visual_gate_agx                           67M   patch-level visual gate renders (supp. visual_gate panels)

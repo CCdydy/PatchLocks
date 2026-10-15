@@ -13,8 +13,8 @@ set -euo pipefail
 #   E2c (both):          CLUMP_CW=2 CLUMP_BUCKET=1 OUT=patchlocks/datasets/v16/e2c_both bash patchlocks/v16/launch_train_v16.sh
 # Watch: `[eval] score=`, `[eval-v16] clump_corr= ... parallelism ... tangled-rate ...`.
 
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"
-PY="${PY:-/home/rog/miniconda3/envs/difflocks/bin/python}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+PY="${PY:-python}"
 cd "$ROOT"
 
 DATA="${DATA:-patchlocks/datasets/v11_longfur/renders_mv}"

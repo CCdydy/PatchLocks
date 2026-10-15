@@ -3,7 +3,7 @@ Adds left coat row-labels, thin separators, serif headers; white background.
 Order: Input | GT | Diffusion (ours) | Deterministic | Predicted stats.
 (ours placed right after GT so the eye compares ours->GT first; weakest arms last.)
 
-Run: /home/rog/miniconda3/envs/difflocks/bin/python \
+Run: python \
        patchlocks/experiments/rebuttal_2027/paper_draft/compose_qual.py
 """
 import os, json

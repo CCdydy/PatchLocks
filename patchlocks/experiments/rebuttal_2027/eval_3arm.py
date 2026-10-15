@@ -13,7 +13,7 @@ Protocols:
 Per-patch values are dumped to JSON for bootstrap CI (C).
 
 Run (original val):
-  cd /home/rog/Desktop/diffusionF && /home/rog/miniconda3/envs/difflocks/bin/python \
+  python \
     patchlocks/experiments/rebuttal_2027/eval_3arm.py --mode val \
     --out patchlocks/experiments/rebuttal_2027/eval3arm_val80.json
 Run (test set B):

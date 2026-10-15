@@ -12,7 +12,7 @@ Same protocol seeds as eval_3arm --mode val: patches env.vi[:80], texel seed
 per-patch from the eval_3arm JSON (--k4_json); paired bootstrap on the deltas.
 
 Run:
-  cd /home/rog/Desktop/diffusionF && /home/rog/miniconda3/envs/difflocks/bin/python \
+  python \
     patchlocks/experiments/rebuttal_2027/eval_k1.py \
     --k4_json patchlocks/experiments/rebuttal_2027/eval3arm_val80.json \
     --out patchlocks/experiments/rebuttal_2027/eval_k1_val80.json

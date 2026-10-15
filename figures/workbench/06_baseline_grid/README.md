@@ -30,7 +30,7 @@ bash PatchLocks_paper/figure_workbench/06_baseline_grid/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/06_baseline_grid/code/_build_baseline_grid_nf.py
+python PatchLocks_paper/figure_workbench/06_baseline_grid/code/_build_baseline_grid_nf.py
 ```
 
 After manual refinement of `final.png`:

@@ -11,7 +11,7 @@ all arms' claims; the panel shows what 7 scalars + the fixed synthesizer can
 express (that IS the experiment).
 
 Run (AFTER eval_k1 frees the GPU):
-  cd /home/rog/Desktop/diffusionF && /home/rog/miniconda3/envs/difflocks/bin/python \
+  python \
     patchlocks/experiments/rebuttal_2027/grid_dump_3arm.py \
     --out patchlocks/experiments/rebuttal_2027/grid5
 """

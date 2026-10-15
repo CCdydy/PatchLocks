@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Frozen independent test set B: 160 patches, train-matched coat proportions, disjoint seeds.
 set -euo pipefail
-cd /home/rog/Desktop/diffusionF
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+cd "$ROOT"
+PY="${PY:-python}"
 OUT=patchlocks/experiments/rebuttal_2027/testB_patches
 mkdir -p "$OUT"
 SCHEMES=(solid two_tone bicolor tabby tipped)

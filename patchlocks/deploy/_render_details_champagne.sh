@@ -3,7 +3,7 @@
 # per animal, in the locked champagne melanin material — unifies the figure
 # family (teaser / qual / nfcompare / detail all share one display material).
 set -euo pipefail
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"; cd "$ROOT"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"; cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 SRC="${SRC:-v2_results/refine_v16_fluffy}"

@@ -3,7 +3,7 @@
 # in the SAME locked champagne melanin material as the teaser (geometry unchanged;
 # camera pulled in 2.3 -> 2.05 so the animal fills more of the cell).
 set -euo pipefail
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"; cd "$ROOT"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"; cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 SRC="${SRC:-v2_results/refine_v16_fluffy}"

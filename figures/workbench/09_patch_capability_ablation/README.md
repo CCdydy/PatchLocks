@@ -29,7 +29,7 @@ bash PatchLocks_paper/figure_workbench/09_patch_capability_ablation/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/09_patch_capability_ablation/code/_build_capability_clean.py
+python PatchLocks_paper/figure_workbench/09_patch_capability_ablation/code/_build_capability_clean.py
 ```
 
 After manual refinement of `final.png`:

@@ -29,7 +29,7 @@ bash PatchLocks_paper/figure_workbench/07_patch_character/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/07_patch_character/code/_build_patchfig_dark.py
+python PatchLocks_paper/figure_workbench/07_patch_character/code/_build_patchfig_dark.py
 ```
 
 After manual refinement of `final.png`:

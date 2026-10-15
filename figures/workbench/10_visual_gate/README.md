@@ -31,7 +31,7 @@ bash PatchLocks_paper/figure_workbench/10_visual_gate/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/10_visual_gate/code/v16_visual_gate.py --model patchlocks/datasets/v16/e2a_cw15/v14_best.pt --renders patchlocks/datasets/v11_longfur/renders_mv --out patchlocks/datasets/v16/v16_visual_gate_agx
+python PatchLocks_paper/figure_workbench/10_visual_gate/code/v16_visual_gate.py --model patchlocks/datasets/v16/e2a_cw15/v14_best.pt --renders patchlocks/datasets/v11_longfur/renders_mv --out patchlocks/datasets/v16/v16_visual_gate_agx
 ```
 
 After manual refinement of `final.png`:

@@ -16,7 +16,7 @@ import numpy as np
 import cv2
 import trimesh
 
-ROOT = "/home/rog/Desktop/diffusionF"
+ROOT = os.environ.get("ROOT", ".")
 CFG = {
     "beagle":     (f"{ROOT}/patchlocks/deploy/neuralfur_beagle_official/realviews/nf_data_f210",
                    f"{ROOT}/patchlocks/datasets/neuralfur/official_results/extracted/neuralfur/beagle_dog/furless_reshaped.obj"),

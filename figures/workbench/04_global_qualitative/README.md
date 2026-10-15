@@ -32,7 +32,7 @@ bash PatchLocks_paper/figure_workbench/04_global_qualitative/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/04_global_qualitative/code/build_qual_detail_row.py
+python PatchLocks_paper/figure_workbench/04_global_qualitative/code/build_qual_detail_row.py
 ```
 
 After manual refinement of `final.png`:

@@ -3,8 +3,9 @@
 # The FIT (Step2) operates on per-patch variables and a fixed proxy sample -> independent of strand count.
 # The GROW instantiates strands -> scales. Measure the grow at several budgets, reusing all upstream artifacts.
 set -euo pipefail
-cd /home/rog/Desktop/diffusionF
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+cd "$ROOT"
+PY="${PY:-python}"
 SRC=v2_results/refine_v16_4animals/beagle
 OUT=v2_results/s4_scaling; mkdir -p $OUT
 set -a; source patchlocks/deploy/refine_annotations/beagle.env; set +a

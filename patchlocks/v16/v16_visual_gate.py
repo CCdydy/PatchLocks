@@ -16,7 +16,7 @@ GEOMETRY / CHARACTER (length, lift, curl, clump, density, color from the back-pr
 NOT image-accurate absolute direction. The GT column is the real ground-truth groom.
 
 Run (repo root, difflocks env):
-  /home/rog/miniconda3/envs/difflocks/bin/python patchlocks/v16/v16_visual_gate.py \
+  python patchlocks/v16/v16_visual_gate.py \
     --model patchlocks/datasets/v16/e2a_cw15/v14_best.pt \
     --renders patchlocks/datasets/v11_longfur/renders_mv \
     --out patchlocks/datasets/v16/v16_visual_gate \

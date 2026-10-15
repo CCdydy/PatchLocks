@@ -40,8 +40,8 @@ codec + texel-sampling logic. This is apples-to-apples SAME-PATCH:
   is intrinsic to V10's single-view architecture and is reported explicitly.
 
 Run (SMOKE first, then full):
-  EVAL_SMOKE=2  /home/rog/miniconda3/envs/difflocks/bin/python patchlocks/v16/eval_v16_vs_v10.py
-  EVAL_SMOKE=0  /home/rog/miniconda3/envs/difflocks/bin/python patchlocks/v16/eval_v16_vs_v10.py   # full subset
+  EVAL_SMOKE=2  python patchlocks/v16/eval_v16_vs_v10.py
+  EVAL_SMOKE=0  python patchlocks/v16/eval_v16_vs_v10.py   # full subset
 """
 import os, sys, json, glob, tempfile, subprocess, shutil
 sys.path.insert(0, os.getcwd()); sys.path.insert(0, "patchlocks/v14"); sys.path.insert(0, "patchlocks/data_gen")
@@ -52,7 +52,7 @@ from v14_common import build_env
 RENDERS  = "patchlocks/datasets/v11_longfur/renders_mv"
 V16_DIR  = "patchlocks/datasets/v14/e1_full_sm80"  # E1: multi-view full-mode, NO clump channel weighting
 V10_DIR  = "patchlocks/v2_locked/V10_PATCH_STABLE"     # locked stable: stage3_model.pt + b3_fuser.pt (xd=70)
-PYBIN    = "/home/rog/miniconda3/envs/difflocks/bin/python"
+PYBIN    = os.environ.get("PY", sys.executable)
 CFG_W    = 3.0
 LEN_K    = 32
 STEPS    = 40

@@ -33,7 +33,7 @@ bash PatchLocks_paper/figure_workbench/08_neuralfur_comparison/rebuild.sh
 Expanded build command:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python PatchLocks_paper/figure_workbench/08_neuralfur_comparison/code/_build_nfcompare_nf.py
+python PatchLocks_paper/figure_workbench/08_neuralfur_comparison/code/_build_nfcompare_nf.py
 ```
 
 After manual refinement of `final.png`:
