@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 cd "$ROOT"
 PY="${PY:-python}"
-OUT=patchlocks/experiments/rebuttal_2027/testB_patches
+OUT="${OUT:-outputs/testsets/testB_patches}"   # the frozen set used in the paper is patchlocks/experiments/rebuttal_2027/testB_patches; never regenerate it in place
 mkdir -p "$OUT"
 SCHEMES=(solid two_tone bicolor tabby tipped)
 # coat:count  (COUNTS/10 from build_full_dataset.sh, rounded to 160 total)

@@ -33,7 +33,7 @@ SCHEMES = ["solid", "two_tone", "bicolor", "tabby", "tipped"]
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--n_per", type=int, default=20, help="patches per OOD coat")
-ap.add_argument("--out", default="patchlocks/experiments/rebuttal_2027/ood_patches")
+ap.add_argument("--out", default="outputs/testsets/ood_patches")  # frozen paper set: patchlocks/experiments/rebuttal_2027/ood_patches
 ap.add_argument("--seed0", type=int, default=810000)
 a = ap.parse_args()
 os.makedirs(a.out, exist_ok=True)

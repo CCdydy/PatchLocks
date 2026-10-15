@@ -73,6 +73,9 @@ for shard in 0 1; do
 done
 wait
 echo "render dirs: $(find "$OUT/renders_mv" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+# MV_ONLY=1: stop here. The paper trains on renders_mv; the single-view rotaug copies below
+# belong to an earlier single-view model. Multi-view targets are baked by bake_mv_targets.py.
+if [[ "${MV_ONLY:-0}" == "1" ]]; then echo "MV_ONLY=1: done after multi-view renders"; exit 0; fi
 
 echo "== explode single-view with physical in-plane rotaug =="
 rm -rf "$OUT/renders_sv_rotaug"

@@ -9,8 +9,8 @@ cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
-SRC="v2_results/refine_v16_fluffy"
-OUTROOT="$SRC/teaser_color_rgba"
+SRC="${SRC:-v2_results/refine_v16_fluffy}"
+OUTROOT="${OUTROOT:-outputs/renders/teaser_color_rgba}"   # never write into the (linked) archive
 mkdir -p "$OUTROOT"
 
 declare -A MESH

@@ -7,7 +7,7 @@ ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"; cd "$ROOT"
 source patchlocks/deploy/paper_render_style.env
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 SRC="${SRC:-v2_results/refine_v16_fluffy}"
-OUTROOT="${OUTROOT:-$SRC/global4_champagne}"; mkdir -p "$OUTROOT"
+OUTROOT="${OUTROOT:-outputs/renders/global4_champagne}"   # never write into the (linked) archive; mkdir -p "$OUTROOT"
 ANIMALS="${ANIMALS:-beagle whiteTiger panda cat}"
 
 declare -A MESH
