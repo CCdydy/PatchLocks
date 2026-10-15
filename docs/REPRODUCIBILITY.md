@@ -36,9 +36,27 @@ published files (`figures/verify_paper_figures.py`). The pipeline overview was d
 
 ## Tables (stage 6)
 
-The result JSONs the paper's numbers were taken from are included; the protocol is in [EVALUATION.md](EVALUATION.md). Every table maps to a
-command in `pipeline/06_evaluate_paper_tables.sh`. *A full recomputation from this repository
-is in progress; results will be recorded here.*
+The result JSONs the paper's numbers were taken from are included; the protocol is in
+[EVALUATION.md](EVALUATION.md). Recomputing everything with `pipeline/06_evaluate_paper_tables.sh`
+reproduced every table:
+
+| Result | Recomputed vs archived |
+|---|---|
+| `tab:capability` (Table 1, n=80) | byte-identical JSON (1.381 → 0.631) |
+| `tab:recipe` (E1 row) | byte-identical JSON (0.674) |
+| `tab:baselines` ID (n=160) and EXT (n=80), bootstrap CIs | all 11,784 numbers identical |
+| one-view ablation, val80 three-arm evaluation | identical (largest difference 1.8e-7) |
+| `tab:ceiling` | identical |
+| character Spearman correlations, `tab:identifiability` | byte-identical JSONs |
+| `tab:seams` | identical |
+
+The newer `eval_3arm.py` additionally reports a `v16s` aggregate absent from the archived val80
+file; all shared values match. `tab:grow_scaling` reports wall-clock timings and was not rerun.
+
+**GPU memory.** The Table 1 and `tab:recipe` scripts score the single-view baseline in one
+subprocess per patch and skip a patch whose subprocess fails. On a GPU shared with other jobs,
+out-of-memory failures silently reduce n (a first run reached n=77 and shifted the means by
+~0.01). Check that the log reports `n=80`.
 
 Differences between the paper text and the archived JSONs (rounding):
 
