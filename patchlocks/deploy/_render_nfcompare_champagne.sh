@@ -8,6 +8,10 @@ source patchlocks/deploy/paper_render_style.env
 BLENDER="patchlocks/third_party/blender-4.5.10-linux-x64/blender"
 NF="patchlocks/deploy/nf_official_render"
 OURS="v2_results/refine_v16_fluffy"
+OUTROOT="${OUTROOT:-$NF}"   # where render_<a>_champ{,_ours} dirs are written
+# Paper inputs (see figures/README.md): Fig. 3 reads the panda "Ours" render from
+# render_panda_champ_ours_len120 (refine_v16_fluffy groom, length x1.2); the supp.
+# 4-animal sheet reads render_panda_champ_ours (refine_v16_paper_smooth groom, x1.0).
 
 declare -A MESH
 MESH[beagle]=patchlocks/datasets/neuralfur/official_results/extracted/neuralfur/beagle_dog/furless_reshaped.obj
@@ -28,11 +32,14 @@ render_one () {  # $1=fur npz  $2=mesh  $3=outdir
 }
 
 for a in beagle whiteTiger panda cat; do
-  render_one "$NF/nf500k_$a.npz"                 "${MESH[$a]}" "$NF/render_${a}_champ" 1.0
+  render_one "$NF/nf500k_$a.npz"                 "${MESH[$a]}" "$OUTROOT/render_${a}_champ" 1.0
   echo "done NF $a"
-  ours_length_mul=1.0
-  if [[ "$a" == "panda" ]]; then ours_length_mul="${PANDA_OURS_LENGTH_MUL:-1.20}"; fi
-  render_one "$OURS/$a/grow/surfpack_v2fur.npz"  "${MESH[$a]}" "$NF/render_${a}_champ_ours" "$ours_length_mul"
+  ours_length_mul=1.0; ours_dir="render_${a}_champ_ours"
+  if [[ "$a" == "panda" ]]; then
+    ours_length_mul="${PANDA_OURS_LENGTH_MUL:-1.20}"
+    [[ "$ours_length_mul" == "1.20" ]] && ours_dir="render_panda_champ_ours_len120"
+  fi
+  render_one "$OURS/$a/grow/surfpack_v2fur.npz"  "${MESH[$a]}" "$OUTROOT/$ours_dir" "$ours_length_mul"
   echo "done OURS $a"
 done
 echo "NF_CHAMPAGNE_DONE"

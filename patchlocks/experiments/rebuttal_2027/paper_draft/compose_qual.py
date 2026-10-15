@@ -10,12 +10,14 @@ import os, json
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = "patchlocks/experiments/rebuttal_2027/grid5"
-OUT = "patchlocks/experiments/rebuttal_2027/paper_draft/fig_baselines_qual.png"
+# Paper figure = frozen test-set picks in grid5_B, rows curly, long, wavy, wiry.
+# (Earlier val80 draft: QUAL_ROOT=.../grid5 QUAL_ROWS=short,wiry,wavy,ultra_short.)
+ROOT = os.environ.get("QUAL_ROOT", "patchlocks/experiments/rebuttal_2027/grid5_B")
+OUT = os.environ.get("QUAL_OUT", "outputs/figures/fig_baselines_qual.png")
 picks = json.load(open(f"{ROOT}/picks.json"))
-# row order: short(structured flat) -> wiry -> wavy -> ultra_short, coats present in val80
-ROW_ORDER = ["short", "wiry", "wavy", "ultra_short"]
-ROW_LABEL = {"short": "short", "wiry": "wiry", "wavy": "wavy", "ultra_short": "ultra-short"}
+ROW_ORDER = os.environ.get("QUAL_ROWS", "curly,long,wavy,wiry").split(",")
+ROW_LABEL = {"short": "short", "wiry": "wiry", "wavy": "wavy", "ultra_short": "ultra-short",
+             "curly": "curly", "long": "long"}
 picks = {p["coat"]: p for p in picks}
 rows = [picks[c] for c in ROW_ORDER if c in picks]
 
@@ -78,5 +80,6 @@ for ri, r in enumerate(rows):
 sep_x = LBLW + PADX + 2 * (S + PADX) - PADX // 2 - 1
 dr.line([(sep_x, HDR), (sep_x, H - 2)], fill=(180, 180, 180), width=2)
 
+os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
 canvas.save(OUT)
 print(f"saved -> {OUT}  ({W}x{H})")

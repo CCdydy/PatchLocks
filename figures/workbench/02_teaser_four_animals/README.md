@@ -1,6 +1,11 @@
 # 02_teaser_four_animals
 
+> **Current rebuild commands:** see [`figures/README.md`](../../README.md) and `bash figures/build_paper_figures.sh`. This README is the archived workbench note; the `rebuild.sh` / `publish.sh` / `code/` copies it mentions were not carried over unless present here.
+
 Paper label: `fig:teaser`  
+Final paper version: `Figures/final_v16_4animals/TEASER_4ANIMALS_CLEAN.png`, built by
+`code/build_teaser_clean.py` (camera-relative soft-champagne renders, no labels). The
+`TEASER_4ANIMALS_SIDE.png` layout described below is an earlier version.  
 Published image: `PatchLocks_paper/Figures/final_v16_4animals/TEASER_4ANIMALS_SIDE.png`
 
 ## Contents

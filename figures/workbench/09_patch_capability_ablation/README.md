@@ -1,5 +1,7 @@
 # 09_patch_capability_ablation
 
+> **Current rebuild commands:** see [`figures/README.md`](../../README.md) and `bash figures/build_paper_figures.sh`. This README is the archived workbench note; the `rebuild.sh` / `publish.sh` / `code/` copies it mentions were not carried over unless present here.
+
 Paper label: `fig:patch_visual_ablation`  
 Published image: `PatchLocks_paper/Figures/patch_capability_v16_clean.png`
 

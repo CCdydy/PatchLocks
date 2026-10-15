@@ -37,3 +37,6 @@ outputs/
 /v2_results/refine_v16_4animals
 /patchlocks/deploy/nf_official_render
 /patchlocks/datasets/v16/v16_visual_gate_agx
+/v2_results/refine_v16_paper_smooth/global4_champagne
+/v2_results/paper_cover_patch/beagle_p855
+/_baselines/surf_render

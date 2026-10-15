@@ -5,15 +5,27 @@ This script only changes presentation. It does not rerun inference, alter the
 predicted strands, or overwrite the source figures.
 """
 
+import os
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 
-ROOT = Path(__file__).resolve().parents[3]
-FIGURES = ROOT / "Figures"
-OUT = FIGURES / "supplement_panels"
-WORKBENCH = ROOT / "figure_workbench" / "11_supplement_panels"
+# Repository root (figures/workbench/11_supplement_panels/code/<this file>).
+ROOT = Path(__file__).resolve().parents[4]
+FIGURES = ROOT / "outputs" / "figures"
+OUT = Path(os.environ.get("SUPP_OUT", FIGURES / "supplement_panels"))
+# Full-resolution source montages (env overrides; defaults = the build outputs /
+# the archived visual-gate render used by the paper).
+GLOBAL_SRC = Path(os.environ.get(
+    "SUPP_GLOBAL", FIGURES / "final_v16_4animals" / "ALL_GLOBAL_4ANIMALS.png"))
+NF_SRC = Path(os.environ.get(
+    "SUPP_NF", FIGURES / "final_v16_4animals" / "NF_COMPARE_4ANIMALS.png"))
+GATE_SRC = Path(os.environ.get(
+    "SUPP_GATE", ROOT / "patchlocks/datasets/v16/v16_visual_gate_agx/v16_visual_gate.png"))
+# patch_capability panels are not used by the final paper; built only if present.
+CAPABILITY_SRC = Path(os.environ.get(
+    "SUPP_CAPABILITY", FIGURES / "patch_capability_v16_clean.png"))
 
 
 def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
@@ -34,7 +46,10 @@ def save_jpeg(image: Image.Image, name: str) -> None:
 
 
 def build_capability_panels() -> None:
-    src = Image.open(FIGURES / "patch_capability_v16_clean.png").convert("RGB")
+    if not CAPABILITY_SRC.exists():
+        print(f"skip patch_capability panels (no {CAPABILITY_SRC})")
+        return
+    src = Image.open(CAPABILITY_SRC).convert("RGB")
     # The source is a regular four-row sheet. Repeat its column header so both
     # half-page panels remain self-contained when LaTeX floats them separately.
     header_end = round(src.height * 66 / 2362)
@@ -57,7 +72,7 @@ def draw_centered(draw: ImageDraw.ImageDraw, xy, text: str, fnt, fill=(28, 28, 2
 
 
 def build_visual_gate_panels() -> None:
-    src = Image.open(FIGURES / "v16_visual_gate_agx.png").convert("RGB")
+    src = Image.open(GATE_SRC).convert("RGB")
     row_h = src.height // 8
     strip_h = max(24, round(row_h * 0.09))
     gutter = 190
@@ -117,9 +132,7 @@ def build_visual_gate_panels() -> None:
 
 
 def build_whole_animal_panels() -> None:
-    global_src = Image.open(
-        FIGURES / "final_v16_4animals" / "ALL_GLOBAL_4ANIMALS.png"
-    ).convert("RGB")
+    global_src = Image.open(GLOBAL_SRC).convert("RGB")
     global_mid = global_src.height // 2
     save_jpeg(global_src.crop((0, 0, global_src.width, global_mid)), "global_turntable_A.jpg")
     save_jpeg(
@@ -127,9 +140,7 @@ def build_whole_animal_panels() -> None:
         "global_turntable_B.jpg",
     )
 
-    nf_src = Image.open(
-        FIGURES / "final_v16_4animals" / "NF_COMPARE_4ANIMALS.png"
-    ).convert("RGB")
+    nf_src = Image.open(NF_SRC).convert("RGB")
     # Four equal result rows are followed by a shared column-label strip. Keep
     # that strip under each two-animal panel.
     row_split = round(nf_src.height * 1084 / 2200)
@@ -148,19 +159,6 @@ def main() -> None:
     build_capability_panels()
     build_visual_gate_panels()
     build_whole_animal_panels()
-    WORKBENCH.mkdir(parents=True, exist_ok=True)
-    for name in (
-        "patch_capability_A.jpg",
-        "patch_capability_B.jpg",
-        "visual_gate_A.jpg",
-        "visual_gate_B.jpg",
-        "global_turntable_A.jpg",
-        "global_turntable_B.jpg",
-        "nf_compare_A.jpg",
-        "nf_compare_B.jpg",
-    ):
-        target = WORKBENCH / name
-        target.write_bytes((OUT / name).read_bytes())
     print(f"Wrote supplement panels to {OUT}")
 
 

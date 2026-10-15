@@ -18,7 +18,11 @@ import numpy as np
 from PIL import Image
 
 G4 = os.environ.get("G4", "v2_results/refine_v16_fluffy/global4_champagne")
-OUT = os.environ.get("Q_OUT", "PatchLocks_paper/Figures/final_v16_4animals/ALL_GLOBAL_4ANIMALS.png")
+# panda row uses the continuous-surface-loft groom (same v16 prior / Step2), as in the paper
+PANDA_G4 = os.environ.get(
+    "PANDA_G4", "v2_results/refine_v16_paper_smooth/global4_champagne/panda"
+)
+OUT = os.environ.get("Q_OUT", "outputs/figures/final_v16_4animals/ALL_GLOBAL_4ANIMALS.png")
 ANIMALS = ["beagle", "whiteTiger", "panda", "cat"]
 ORDER = [int(x) for x in os.environ.get("Q_VIEWS", "1,2,3,0").split(",")]
 
@@ -63,8 +67,10 @@ def main():
     for ai, a in enumerate(ANIMALS):
         for vi, v in enumerate(ORDER):
             r, c = (vi, ai) if TR else (ai, vi)
-            cell = render_cell(f"{G4}/{a}/furview_{v}.png")
+            base = PANDA_G4 if a == "panda" else f"{G4}/{a}"
+            cell = render_cell(f"{base}/furview_{v}.png")
             sheet.paste(cell, (PAD + c * (C + GUT), PAD + r * (C + ROWGUT)))
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
     sheet.save(OUT)
     print("qual-nf", sheet.size, "src:", G4)
 

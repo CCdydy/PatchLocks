@@ -10,6 +10,7 @@ of patchlocks/qa/v2_patch_io_gate.py.
 
 Run: ~/miniconda3/envs/difflocks/bin/python patchlocks/deploy/_build_patchfig_dark.py
 """
+import os
 import numpy as np
 import cv2
 import matplotlib
@@ -18,7 +19,7 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
 
 R = "v2_results/refine_v16_fluffy"
-OUT = "PatchLocks_paper/Figures/final_v16_4animals/ALL_PATCHES_AND_CHARACTER_TIGHT.png"
+OUT = os.environ.get("PF_OUT", "outputs/figures/final_v16_4animals/ALL_PATCHES_AND_CHARACTER_TIGHT.png")
 DARK = (46, 46, 46)
 INK = (20, 20, 20)
 GUT = 14
@@ -166,6 +167,7 @@ def main():
         sheet.paste(swatch_cell(a), (LABW + C + GUT, y))
         sheet.paste(reliability_cell(a), (LABW + 2 * (C + GUT), y))
         print("row done", a, "ids", ids.tolist(), "best", best)
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
     sheet.save(OUT)
     print("saved", OUT, sheet.size)
 

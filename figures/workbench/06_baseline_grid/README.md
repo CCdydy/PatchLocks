@@ -1,5 +1,7 @@
 # 06_baseline_grid
 
+> **Current rebuild commands:** see [`figures/README.md`](../../README.md) and `bash figures/build_paper_figures.sh`. This README is the archived workbench note; the `rebuild.sh` / `publish.sh` / `code/` copies it mentions were not carried over unless present here.
+
 Paper label: `fig:baselinegrid`  
 Published image: `PatchLocks_paper/Figures/final_v16_4animals/BASELINE_GRID_NF.png`
 

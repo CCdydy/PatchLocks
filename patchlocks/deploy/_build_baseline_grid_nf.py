@@ -20,13 +20,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 SURF = "_baselines/surf_render"
 OURS = "v2_results/refine_v16_fluffy/global4_champagne"
-PANDA_IMG = "patchlocks/datasets/REAL_DATA_ROOT/real_animals/artemis/panda/images/0009.png"
+PANDA_IMG = "patchlocks/datasets/neuralfur/extracted/data/Artemis/panda_processed_GH2/walk/images_2/0009.png"
 PHOTO = {  # (data_dir, view) for the masked input photos
     "beagle": ("patchlocks/deploy/neuralfur_beagle_official/realviews/nf_data_f210", "0021"),
     "whiteTiger": ("patchlocks/deploy/neuralfur_whiteTiger_official/realviews/nf_data_roaringwalk_f5", "0009"),
     "cat": ("patchlocks/deploy/neuralfur_cat_official/realviews/nf_data_walk_final_f0", "0009"),
 }
-OUT = "PatchLocks_paper/Figures/final_v16_4animals/BASELINE_GRID_NF.png"
+OUT = os.environ.get("BG_OUT", "outputs/figures/final_v16_4animals/BASELINE_GRID_NF.png")
 ANIMALS = ["beagle", "whiteTiger", "panda", "cat"]
 FS = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"   # NF labels are serif
 
@@ -114,6 +114,7 @@ def main():
     for c, (head, _) in enumerate(cols):
         x = PAD + c * (C + GUT)
         d.text((x + (C - d.textlength(head, font=fh)) / 2, ly), head, font=fh, fill=INK)
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
     sheet.save(OUT)
     print("nf-grid", sheet.size, "cols:", [h for h, _ in cols])
 

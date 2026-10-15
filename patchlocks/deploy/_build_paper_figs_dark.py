@@ -17,7 +17,8 @@ HI = "patchlocks/deploy/nf_official_render"       # 2560 hi-res view-1 renders
 import os
 G4 = os.environ.get("G4", "v2_results/refine_v16_fluffy/global4")  # 1280 turntable views 0-3
 DET = os.environ.get("DET", "v2_results/refine_v16_fluffy/details_champagne")
-OUTD = "PatchLocks_paper/Figures/final_v16_4animals"
+OUTD = os.environ.get("OUTD", "outputs/figures/final_v16_4animals")
+os.makedirs(OUTD, exist_ok=True)
 TEASER_RGBA = "v2_results/refine_v16_fluffy/teaser_color_rgba"
 
 DARK = (46, 46, 46)
@@ -43,7 +44,7 @@ PHOTO = {  # (data_dir, view) for the input chips
     "whiteTiger": ("patchlocks/deploy/neuralfur_whiteTiger_official/realviews/nf_data_roaringwalk_f5", "0009"),
     "cat": ("patchlocks/deploy/neuralfur_cat_official/realviews/nf_data_walk_final_f0", "0009"),
 }
-PANDA_IMGDIR = "patchlocks/datasets/REAL_DATA_ROOT/real_animals/artemis/panda"
+PANDA_IMGDIR = "patchlocks/datasets/neuralfur/extracted/data/Artemis/panda_processed_GH2/walk"
 
 
 def load_rgba(path):
@@ -84,7 +85,7 @@ def photo_chip(animal, size, view=None):
     """Masked input photo on near-white, tight square crop."""
     if animal == "panda":
         # ARTEMIS render already sits on pure white -- keep it as-is (photo look)
-        img = np.array(Image.open(f"{PANDA_IMGDIR}/images/0009.png").convert("RGB")).astype(np.float32)
+        img = np.array(Image.open(f"{PANDA_IMGDIR}/images_2/0009.png").convert("RGB")).astype(np.float32)
         m = (255.0 - img).max(axis=2) > 12
         ys, xs = np.where(m)
         x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()

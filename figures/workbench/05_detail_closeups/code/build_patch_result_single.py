@@ -8,6 +8,7 @@ receive the same light-champagne display transform; geometry is untouched.
 """
 
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +23,7 @@ FINAL = (
     ROOT
     / "v2_results/refine_v16_fluffy/details_champagne/beagle/beagle_detail_v3.png"
 )
-OUT = ROOT / "PatchLocks_paper/Figures/PATCH_RESULT_SINGLE_COLUMN.png"
+OUT = Path(os.environ.get("PATCH_OUT", ROOT / "outputs/figures/PATCH_RESULT_SINGLE_COLUMN.png"))
 
 TILE = 500
 GAP = 18
@@ -32,13 +33,23 @@ INK = (26, 26, 26)
 FONT = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 
 
+def repo_path(path: str) -> Path:
+    """metadata.json stores absolute paths from the original machine
+    (/home/rog/Desktop/diffusionF/...); resolve them against this repository."""
+    p = Path(path)
+    for anchor in ("patchlocks", "v2_results"):
+        if p.is_absolute() and anchor in p.parts:
+            return ROOT.joinpath(*p.parts[p.parts.index(anchor):])
+    return ROOT / p
+
+
 def observed_patch() -> Image.Image:
     meta = json.loads(META.read_text(encoding="utf-8"))
     record = next(view for view in meta["views"] if view["view_id"] == "0003")
-    pack = np.load(meta["source_pack"], allow_pickle=True)
+    pack = np.load(repo_path(meta["source_pack"]), allow_pickle=True)
     patch_id = int(meta["patch_id"])
     view_idx = int(np.where(pack["view_ids"] == "0003")[0][0])
-    source = Image.open(ROOT / record["source_image"]).convert("RGB")
+    source = Image.open(repo_path(record["source_image"])).convert("RGB")
 
     uv = pack["uv"][patch_id, view_idx].astype(np.float32)
     visible = (pack["vis"][patch_id, view_idx] > 0.5) & (
@@ -103,6 +114,7 @@ def main() -> None:
         box = draw.textbbox((0, 0), label, font=font)
         draw.text((x + (TILE - (box[2] - box[0])) / 2, 5), label, font=font, fill=INK)
         canvas.paste(panel, (x, HEADER))
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(OUT)
     print(f"wrote {OUT} {canvas.size}")
 

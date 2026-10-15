@@ -1,5 +1,7 @@
 # 10_visual_gate
 
+> **Current rebuild commands:** see [`figures/README.md`](../../README.md) and `bash figures/build_paper_figures.sh`. This README is the archived workbench note; the `rebuild.sh` / `publish.sh` / `code/` copies it mentions were not carried over unless present here.
+
 Paper label: `fig:gate`  
 Published image: `PatchLocks_paper/Figures/v16_visual_gate_agx.png`
 

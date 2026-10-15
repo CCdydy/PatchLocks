@@ -17,14 +17,21 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 NF = "patchlocks/deploy/nf_official_render"
-PANDA_IMG = "patchlocks/datasets/REAL_DATA_ROOT/real_animals/artemis/panda/images/0009.png"
+PANDA_IMG = "patchlocks/datasets/neuralfur/extracted/data/Artemis/panda_processed_GH2/walk/images_2/0009.png"
 PHOTO = {
     "beagle": ("patchlocks/deploy/neuralfur_beagle_official/realviews/nf_data_f210", "0021"),
     "whiteTiger": ("patchlocks/deploy/neuralfur_whiteTiger_official/realviews/nf_data_roaringwalk_f5", "0009"),
     "cat": ("patchlocks/deploy/neuralfur_cat_official/realviews/nf_data_walk_final_f0", "0009"),
 }
-OUT = os.environ.get("NF_OUT", "PatchLocks_paper/Figures/final_v16_4animals/NF_COMPARE_4ANIMALS.png")
+OUT = os.environ.get("NF_OUT", "outputs/figures/final_v16_4animals/NF_COMPARE_4ANIMALS.png")
 ANIMALS = os.environ.get("NF_ANIMALS", "beagle,whiteTiger,panda,cat").split(",")
+# Per-animal "Ours" render dir override, e.g. NF_OURS="panda=render_panda_champ_ours_len120"
+# (main-paper Fig. 3 uses the length-1.2 panda groom; the supp. 4-animal sheet does not).
+NF_OURS = dict(kv.split("=", 1) for kv in os.environ.get("NF_OURS", "").split(",") if kv)
+# Animals whose "Ours" full-body cell is cropped from the Ours render's own alpha
+# instead of the NeuralFur render's (needed when the Ours groom is longer and its
+# silhouette no longer fits the NeuralFur crop), e.g. NF_OURS_OWN_CROP=panda.
+OWN_CROP = set(a for a in os.environ.get("NF_OURS_OWN_CROP", "").split(",") if a)
 FS = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
 
 # zoom window centers in 1280 coords, tuned on camdist 2.3 then rescaled to the
@@ -123,12 +130,14 @@ def main():
         y = PAD + r * (C + ROWGUT)
         win = WIN[a]
         crop = body_crop_square(f"{NF}/render_{a}_champ/furview_1.png")
+        ours = f"{NF}/{NF_OURS.get(a, f'render_{a}_champ_ours')}/furview_1.png"
+        ours_crop = body_crop_square(ours) if a in OWN_CROP else crop
         cells = [
             input_cell(a),
             cell_full(f"{NF}/render_{a}_champ/furview_1.png", win, crop),
             cell_zoom(f"{NF}/render_{a}_champ/furview_1.png", win),
-            cell_full(f"{NF}/render_{a}_champ_ours/furview_1.png", win, crop),
-            cell_zoom(f"{NF}/render_{a}_champ_ours/furview_1.png", win),
+            cell_full(ours, win, ours_crop),
+            cell_zoom(ours, win),
         ]
         for c, im in enumerate(cells):
             sheet.paste(im, (PAD + c * (C + GUT), y))
@@ -136,7 +145,9 @@ def main():
     for c, head in enumerate(heads):
         x = PAD + c * (C + GUT)
         d.text((x + (C - d.textlength(head, font=fh)) / 2, ly), head, font=fh, fill=INK)
-    sheet.save(OUT)
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
+    # the published Fig. 3 PNG was written with optimize=True (pixels are identical either way)
+    sheet.save(OUT, optimize=os.environ.get("NF_PNG_OPTIMIZE", "0") == "1")
     print("nfcompare-nf", sheet.size)
 
 

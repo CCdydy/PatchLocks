@@ -46,5 +46,8 @@ thirdparty  patchlocks/third_party/blender-4.5.10-linux-x64                     
 # ---- archived paper outputs (figure inputs; reproducible with the pipeline) ----
 ours        v2_results/refine_v16_fluffy                                          5.3G  final grooms + renders used by the paper figures and tab:animals
 ours        v2_results/refine_v16_4animals                                        5.1G  grooms used by supp. tab:seams and the grow-scaling table
-ours        patchlocks/deploy/nf_official_render                                  3.4M  NeuralFur-vs-ours comparison renders (Fig. 3)
+ours        patchlocks/deploy/nf_official_render                                  50M   NeuralFur-vs-ours comparison renders (Fig. 3, supp. nf_compare panels)
 ours        patchlocks/datasets/v16/v16_visual_gate_agx                           67M   patch-level visual gate renders (supp. visual_gate panels)
+ours        v2_results/refine_v16_paper_smooth/global4_champagne                  3.0M  panda turntable renders (continuous-loft groom) for supp. global_turntable panels
+ours        v2_results/paper_cover_patch/beagle_p855                              12M   single-patch result (beagle patch 855) for supp. PATCH_RESULT_SINGLE_COLUMN
+ours        _baselines/surf_render                                                19M   NeuS / GenZoo surface renders for supp. BASELINE_GRID_NF

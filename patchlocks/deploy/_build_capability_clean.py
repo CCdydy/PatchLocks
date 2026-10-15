@@ -8,10 +8,12 @@ column comparison shows geometry only --- same treatment as the cover figure.
 
 Run: ~/miniconda3/envs/difflocks/bin/python patchlocks/deploy/_build_capability_clean.py
 """
+import os
+
 from PIL import Image, ImageDraw, ImageFont
 
 SRC = "v2_results/paper_cover_patch/dataset_3coats"
-OUT = "PatchLocks_paper/Figures/patch_capability_v16_clean.png"
+OUT = os.environ.get("CAP_OUT", "outputs/figures/patch_capability_v16_clean.png")
 ROWS = ["rd_0081_short_dense_two_tone", "rd_0418_wavy_tipped",
         "rd_0592_curly_solid", "rd_0849_long_golden_two_tone"]
 INK, GUT, C = (20, 20, 20), 14, 560
@@ -37,6 +39,7 @@ def main():
         sheet.paste(cell(f"{SRC}/{s}/input_2d.png"), (GUT, y))
         sheet.paste(cell(f"{SRC}/{s}/gt_render/rgb_0.png"), (GUT + C + GUT, y))
         sheet.paste(cell(f"{SRC}/{s}/pred_render/rgb_0.png"), (GUT + 2 * (C + GUT), y))
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
     sheet.save(OUT)
     print("wrote", OUT, sheet.size)
 
