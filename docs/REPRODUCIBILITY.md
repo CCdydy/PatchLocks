@@ -13,11 +13,21 @@ by `pipeline/00_link_data.sh`, and compared with the archived outputs that the p
 | 1 diffusion predictions (42 arrays) | bit-identical |
 | 1b–1d region prior, character, swatch | bit-identical (only stored file paths differ) |
 | 2 orientation/length fit | GPU float non-determinism: mean \|Δ\| 3e-4 rad (max 0.05) orientation, 0.4 % (max 7 %) length |
-| 3 groom | same strand count and roots for every animal (beagle 1,153,092; white tiger 1,123,693; panda 1,156,964); beagle tip displacement median 2.7e-6 (0.02 % of strand length), 99th percentile 4e-4; length percentiles equal to four decimals |
+| 3 groom | same strand count and roots for every animal (beagle 1,153,092; white tiger 1,123,693; panda 1,156,964; cat 1,200,215); beagle tip displacement median 2.7e-6 (0.02 % of strand length), 99th percentile 4e-4; length percentiles equal to four decimals |
 | renders | visually indistinguishable; PSNR 34–38 dB on 1536 px close-ups, 48–50 dB full body |
 
 Rendering an *archived* groom with the paper's Blender command reproduced the paper render pixel
 for pixel, so the remaining render differences come only from the step-2 float differences.
+
+**Panda recipes.** The paper uses two panda grooms. The main one (`refine_v16_fluffy`: teaser,
+close-ups, Fig. 3, `tab:animals`) was grown with a random torso loft; `panda.env` now reproduces
+it (strand tips within 0.14 % of strand length at the median, 2.4 % at the 99th percentile;
+close-up renders at PSNR 32–35 dB, visually indistinguishable). The supplementary turntables
+and the four-animal NeuralFur comparison use a later smooth-loft variant
+(`refine_v16_paper_smooth`), reproduced approximately by `panda_paper_smooth.env`
+(`RECIPE_SUFFIX=_paper_smooth`): 1,156,964 strands versus the archived 1,157,462 (0.04 %).
+The original package shipped only the later smooth recipe as `panda.env`, which does not
+reproduce the main paper panda.
 
 ## Figures (stage 7)
 

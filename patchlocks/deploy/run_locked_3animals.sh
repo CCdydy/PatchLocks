@@ -97,7 +97,8 @@ DATA_DIR[cat]=patchlocks/deploy/neuralfur_cat_official/realviews/nf_data_walk_fi
 
 for a in $ANIMALS; do
   echo "######################## $a ########################"
-  ENVF="patchlocks/deploy/refine_annotations/${a}.env"
+  # RECIPE_SUFFIX selects a recipe variant, e.g. RECIPE_SUFFIX=_paper_smooth -> panda_paper_smooth.env
+  ENVF="patchlocks/deploy/refine_annotations/${a}${RECIPE_SUFFIX:-}.env"
   [[ -f "$ENVF" ]] || { echo "ERROR: missing $ENVF"; exit 2; }
   # subshell so each animal's locked .env (region-detail/tail policy) cannot leak
   (
@@ -149,21 +150,21 @@ for a in $ANIMALS; do
     # associative arrays to the child, so reassigning PACK=... in the shell would
     # reach the WRAP empty. The prefix form reads the array element here and exports
     # a plain scalar to the child.
-    OUTDIR_A="$OUTROOT/$a"
+    OUTDIR_A="$OUTROOT/$a${RECIPE_SUFFIX:-}"
     mkdir -p "$OUTDIR_A"
     PACK="${PACK[$a]}" OUTDIR="$OUTDIR_A" GEOPACK="${GEOPACK[$a]}" \
       DATA_DIR="${DATA_DIR[$a]}" MESH="${MESH[$a]}" bash "$WRAP"
   )
-  echo "  -> $OUTROOT/$a/grow/surfpack_v2fur.npz"
+  echo "  -> $OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz"
 done
 
 # ---- close-up DETAIL renders (the paper output spec) ----
 DET="$OUTROOT/details"; mkdir -p "$DET"
 for a in $ANIMALS; do
-  OUT="$DET/$a"; mkdir -p "$OUT"
+  OUT="$DET/$a${RECIPE_SUFFIX:-}"; mkdir -p "$OUT"
   for v in 1 3; do
     "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \
-      --fur "$OUTROOT/$a/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
+      --fur "$OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
       --only_view $v --views 4 --res 1536 --samples 128 --up y --camdist 0.5 \
       --flat 0.78,0.78,0.74 --spec 0.22 --skin 0.66,0.66,0.66 --transparent \
       --out_name "${a}_detail_v${v}.png" > "$OUT/detail_v$v.log" 2>&1
@@ -174,10 +175,10 @@ done
 # ---- full-body side renders (paper/QA overview; kept separate from close-up detail) ----
 SIDE="$OUTROOT/side_full"; mkdir -p "$SIDE"
 for a in $ANIMALS; do
-  OUT="$SIDE/$a"; mkdir -p "$OUT"
+  OUT="$SIDE/$a${RECIPE_SUFFIX:-}"; mkdir -p "$OUT"
   for v in 1 3; do
     "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \
-      --fur "$OUTROOT/$a/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
+      --fur "$OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
       --only_view $v --views 4 --res "${FULL_SIDE_RES:-1536}" --samples "${FULL_SIDE_SAMPLES:-40}" \
       --up y --camdist "${FULL_SIDE_CAMDIST:-2.3}" \
       --flat 0.78,0.78,0.74 --spec 0.22 --skin 0.66,0.66,0.66 --transparent \
