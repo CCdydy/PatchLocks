@@ -71,6 +71,7 @@ made portable; `git diff` against the first commit shows every change. Rerunning
 * **diffusion predictions:** bit-identical;
 * **grooms:** identical up to GPU float non-determinism in the multi-view fit (same strand counts and roots, 0.02 % median tip displacement);
 * **renders:** visually indistinguishable;
+* **every paper table:** recomputed values match the archived results (Table 1 byte-identical);
 * **all 12 script-built paper figures:** byte-identical.
 
 Details, the table-by-table status and known issues are in
