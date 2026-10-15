@@ -1,4 +1,4 @@
-"""3-arm fair evaluation (CONTRACT.md): Diffusion(v16) / Det-z64 / Direct-7.
+"""3-arm fair evaluation (docs/EVALUATION.md): Diffusion(v16) / Det-z64 / Direct-7.
 
 ONE env, ONE measurement implementation for all arms (decode_params formulas
 replicated locally so raw strand arrays are accessible for distribution metrics

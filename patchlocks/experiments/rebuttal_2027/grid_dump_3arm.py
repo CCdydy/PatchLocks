@@ -1,11 +1,11 @@
-"""Visual grid (CONTRACT metric level 3): Input | GT | Direct-7 | Det-z64 | Diffusion.
+"""Visual grid (docs/EVALUATION.md, visual metric): Input | GT | Direct-7 | Det-z64 | Diffusion.
 
 4 coat archetypes from the val80 set, ONE camera (view 0) + neutral material for
 every 3D panel so the comparison is geometry/character only. All predicted arms
 share the SAME rho-weighted roots (GT-rho conditioning, protocol-consistent) and
 the SAME per-root radius map; colors neutral tan everywhere (GT included).
 
-Direct-7 disclosure (CONTRACT clause 4): its strands are synthesized by
+Direct-7 disclosure (docs/EVALUATION.md): its strands are synthesized by
 _stroke_offsets_from_stats in the canonical +x sweep — direction is external to
 all arms' claims; the panel shows what 7 scalars + the fixed synthesizer can
 express (that IS the experiment).

@@ -26,7 +26,7 @@ published files (`figures/verify_paper_figures.py`). The pipeline overview was d
 
 ## Tables (stage 6)
 
-The result JSONs the paper's numbers were taken from are included. Every table maps to a
+The result JSONs the paper's numbers were taken from are included; the protocol is in [EVALUATION.md](EVALUATION.md). Every table maps to a
 command in `pipeline/06_evaluate_paper_tables.sh`. *A full recomputation from this repository
 is in progress; results will be recorded here.*
 

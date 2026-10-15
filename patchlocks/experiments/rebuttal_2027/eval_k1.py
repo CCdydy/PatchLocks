@@ -1,4 +1,4 @@
-"""E: test-time K=1 vs K=4 for the SAME v16 checkpoint (CONTRACT.md section E).
+"""E: test-time K=1 vs K=4 for the SAME v16 checkpoint (docs/EVALUATION.md).
 
 K=1 protocol: build_env(views_override=1) -> EVERY condition from view 0 only
 (fuser G_COND views=1, RAYC re-reduced over view 0, GLOB/RGBPROJ rebuilt from

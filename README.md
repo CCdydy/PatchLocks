@@ -83,6 +83,7 @@ Details, the table-by-table status and known issues are in
 | [docs/PIPELINE.md](docs/PIPELINE.md) | stages, the steps inside a reconstruction, determinism |
 | [docs/DATA.md](docs/DATA.md) | weights and datasets, sources and licenses, how our data was generated |
 | [docs/NEW_ANIMAL.md](docs/NEW_ANIMAL.md) | preprocessing a new animal |
+| [docs/EVALUATION.md](docs/EVALUATION.md) | evaluation protocol: test sets, compared predictors, metrics, confidence intervals |
 | [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) | what was verified and how, known issues |
 | [figures/README.md](figures/README.md) | every paper figure → builder → inputs |
 | [data/manifest.txt](data/manifest.txt) | every checkpoint and dataset the code expects |

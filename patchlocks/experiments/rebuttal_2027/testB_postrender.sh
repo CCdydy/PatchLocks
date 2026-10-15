@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# B post-render chain (CONTRACT.md section B): bake -> pose -> QA -> FREEZE -> eval_3arm -> bootstrap.
+# B post-render chain (docs/EVALUATION.md): bake -> pose -> QA -> FREEZE -> eval_3arm -> bootstrap.
 # Run AFTER the Blender render of testB_renders completes (160 dirs x rgb_0..3 + cameras.json + patch.npz).
 set -euo pipefail
 ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"

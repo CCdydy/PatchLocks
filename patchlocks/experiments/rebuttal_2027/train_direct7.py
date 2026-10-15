@@ -1,4 +1,4 @@
-"""Arm 3 (Direct-7): direct regression of the eval character parameters (CONTRACT.md).
+"""Arm 3 (Direct-7): direct regression of the eval character parameters (docs/EVALUATION.md).
 
 ParamHead precedent (train_param_head.py): small CNN over the frozen fused condition
 G_COND + global DINO token -> MLP -> the 6 eval ATTRS (arc, curl, clump, straight,

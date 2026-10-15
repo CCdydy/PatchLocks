@@ -1,4 +1,4 @@
-"""Arm 2 (Det-z64): deterministic z64 regressor for the 3-arm baseline (CONTRACT.md).
+"""Arm 2 (Det-z64): deterministic z64 regressor for the 3-arm baseline (docs/EVALUATION.md).
 
 Same UNet as the diffusion arm (v14_common.UNet, use_attn=True, dim matched to the
 diffusion ckpt), same frozen conditions (build_env on the SAME e1_dir as the paper
