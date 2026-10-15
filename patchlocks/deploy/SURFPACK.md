@@ -71,7 +71,7 @@ adds per-view `uv/vis` from NeuralFur row-major projection matrices plus body/ha
 Validated on the synthetic brown beagle folder:
 
 ```bash
-/home/rog/miniconda3/bin/python patchlocks/deploy/neuralfur_export_surface_patch_dataset.py \
+python patchlocks/deploy/neuralfur_export_surface_patch_dataset.py \
   --pack patchlocks/deploy/neuralfur_beagle_geopatch_fine/geodesic_patchpack.npz \
   --data_dir patchlocks/deploy/neuralfur_beagle_synth2d_brown \
   --field_pack patchlocks/deploy/neuralfur_beagle_official/beagle_surface_field.npz \
@@ -85,7 +85,7 @@ covered by at least one view.
 v9-lite geometry-first deploy:
 
 ```bash
-/home/rog/miniconda3/bin/python patchlocks/deploy/deploy_v9lite_from_surfpack.py \
+python patchlocks/deploy/deploy_v9lite_from_surfpack.py \
   --pack patchlocks/deploy/neuralfur_beagle_synth2d_brown_surfpack/surface_patch_dataset.npz \
   --geo_dir patchlocks/datasets/stage3_v9_attr \
   --vlm_json patchlocks/deploy/neuralfur_beagle_synth2d_brown_surfpack/vlm_geometry.json \
@@ -105,7 +105,7 @@ orientation losses, not RGB. Current calibration: the NeuralFur brown target has
 2D geometry optimization can now feed back into v9-lite:
 
 ```bash
-/home/rog/miniconda3/envs/difflocks/bin/python patchlocks/deploy/patch_graph_opt_geo.py \
+python patchlocks/deploy/patch_graph_opt_geo.py \
   --pack patchlocks/deploy/neuralfur_beagle_geopatch_fine/geodesic_patchpack.npz \
   --data_dir patchlocks/deploy/neuralfur_beagle_synth2d_brown \
   --field_pack patchlocks/deploy/neuralfur_beagle_official/beagle_surface_field.npz \
@@ -122,7 +122,7 @@ coordinates stay fixed.
 Feed those patch latents back into v9-lite:
 
 ```bash
-/home/rog/miniconda3/bin/python patchlocks/deploy/deploy_v9lite_from_surfpack.py \
+python patchlocks/deploy/deploy_v9lite_from_surfpack.py \
   --pack patchlocks/deploy/neuralfur_beagle_synth2d_brown_surfpack/surface_patch_dataset.npz \
   --geo_dir patchlocks/datasets/stage3_v9_attr \
   --vlm_json patchlocks/deploy/neuralfur_beagle_synth2d_brown_surfpack/vlm_geometry.json \

@@ -2,8 +2,8 @@
 # v6 REDESIGNED dataset overnight pipeline: self-healing booth render (--dr, NO denoise = rainbow guard) ->
 # bake H64 latent -> field_gt -> v6 HYBRID train (z64 diffusion + density head + appearance). Resumable:
 # render_loop skips dirs that already have rgb_3.png + cameras.json + patch.npz, so re-running continues.
-set -u; cd /home/rog/Desktop/diffusionF
-PY=/home/rog/miniconda3/envs/difflocks/bin/python
+set -u; ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"; cd "$ROOT"
+PY="${PY:-python}"
 BL=patchlocks/third_party/blender-4.5.10-linux-x64/blender
 PATCHES=patchlocks/datasets/v6/patches
 REND=patchlocks/datasets/v6/renders

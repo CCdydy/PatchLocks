@@ -10,8 +10,8 @@ set -euo pipefail
 #   rotaug naug=1 -> 2 single-view copies per rendered view
 #   about 12.8k single-view training dirs
 
-ROOT="${ROOT:-/home/rog/Desktop/diffusionF}"
-PY="${PY:-/home/rog/miniconda3/envs/difflocks/bin/python}"
+ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+PY="${PY:-python}"
 BL="${BL:-patchlocks/third_party/blender-4.5.10-linux-x64/blender}"
 OUT="${OUT:-patchlocks/datasets/v11_longfur}"
 NTOT="${NTOT:-1600}"
