@@ -15,7 +15,7 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"                       # builders use repository-relative paths
-PY="${PY:-/home/rog/miniconda3/envs/difflocks/bin/python}"
+PY="${PY:-python}"
 OUT="outputs/figures"
 FV="$OUT/final_v16_4animals"
 S60="$OUT/_supp60/final_v16_4animals"

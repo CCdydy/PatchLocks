@@ -20,7 +20,7 @@ same `final_v16_4animals/`, `supplement_panels/` and `_supp60/` sub-directories.
 it in as `Figures/`. The supplement uses `\graphicspath{{Figures/_supp60/}{Figures/}}`, so the
 60 % copies in `_supp60/` shadow the full-resolution montages, which are also written to
 `final_v16_4animals/`. All commands run from the repository root, and `PY` selects the
-interpreter (default: the `difflocks` conda env).
+interpreter (default: `python`).
 
 ## Figure map
 
