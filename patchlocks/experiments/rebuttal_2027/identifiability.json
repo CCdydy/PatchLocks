@@ -1,0 +1,28 @@
+{
+ "dir_boundary": {
+  "with_orient": {
+   "r_flip": 1.0,
+   "e": 179.4146956126441
+  },
+  "silhouette_only": {
+   "r_flip": 1.0,
+   "e": 179.20650157561553
+  }
+ },
+ "dir_interior": {
+  "with_orient": {
+   "r_flip": 1.0,
+   "e": 171.94527325963293
+  },
+  "silhouette_only": {
+   "r_flip": 1.0,
+   "e": 164.5510114708958
+  }
+ },
+ "len_boundary": {
+  "lenerr_med": 0.0
+ },
+ "len_interior": {
+  "lenerr_med": 3.393388461051963
+ }
+}

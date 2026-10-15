@@ -1,0 +1,9 @@
+{
+  "animal": "whiteTiger",
+  "patch_region_npz": "whiteTiger_patch_region_fixed.npz",
+  "notes": [
+    "Manual per-animal semantic relabel for paper refinement.",
+    "Fixes the previous tail/head confusion: true tail is tail/tail_base, head is face/ears.",
+    "Applied after Step2 prior construction and before grow region policies."
+  ]
+}

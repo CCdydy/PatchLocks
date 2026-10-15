@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "n_scored": 80,
+    "n_requested": 80,
+    "cfg_w": 3.0,
+    "steps": 40,
+    "len_k": 32,
+    "smoke": 0,
+    "nsub": 80,
+    "renders": "patchlocks/datasets/v11_longfur/renders_mv",
+    "v16_dir": "patchlocks/datasets/v14/e1_full_sm80",
+    "v10_dir": "patchlocks/v2_locked/V10_PATCH_STABLE",
+    "metric": "nMAE=mean|pred-GT|/std(GT); corr=Pearson",
+    "params": [
+      "arc(length)",
+      "curl",
+      "clump",
+      "straight",
+      "lift_arc",
+      "tip_spread"
+    ],
+    "same_patches": true
+  },
+  "feasibility": "SAME-PATCHES (apples-to-apples on geometry): v16 and V10 scored on the IDENTICAL seed-0 held-out renders_mv patches, SAME codec + SAME sampled texels + SAME GT. V10's per-patch inference (infer_v10_pixel.py) runs on a SINGLE-VIEW shim (view 0) of each held-out patch because the locked V10 ckpt is single-view (vemb=[1,192], trained on renders_sv) and cannot ingest renders_mv's 4 views. V10's raw z64_map is re-standardized by v16 xm/xs and decoded by the same env.decode_params. Only the predicted z64 differs. The one intrinsic asymmetry: v16 conditions on all 4 views, V10 on 1 view -- each run in its native designed mode (not a confound, it is V10's single-view capability being measured).",
+  "per_param": {
+    "arc": {
+      "display": "arc(length)",
+      "v10_nmae": 0.517407227454772,
+      "v16_nmae": 0.3951241109843459,
+      "v16_nmae_improvement_pct": 23.633824574109795,
+      "v10_corr": 0.8406115346848023,
+      "v16_corr": 0.8768449034507215
+    },
+    "curl": {
+      "display": "curl",
+      "v10_nmae": 0.791371537803443,
+      "v16_nmae": 0.5916993085464146,
+      "v16_nmae_improvement_pct": 25.231161309041422,
+      "v10_corr": 0.5152258762181726,
+      "v16_corr": 0.7022219237922062
+    },
+    "clump": {
+      "display": "clump",
+      "v10_nmae": 3.319134833454079,
+      "v16_nmae": 0.9618025273963037,
+      "v16_nmae_improvement_pct": 71.02249303938648,
+      "v10_corr": 0.20979056816152217,
+      "v16_corr": 0.32798697666859755
+    },
+    "straight": {
+      "display": "straight",
+      "v10_nmae": 0.7808208736560212,
+      "v16_nmae": 0.47665288051478066,
+      "v16_nmae_improvement_pct": 38.954900336749596,
+      "v10_corr": 0.7014144550782659,
+      "v16_corr": 0.8105448446164575
+    },
+    "lift_arc": {
+      "display": "lift_arc",
+      "v10_nmae": 0.8315195848555755,
+      "v16_nmae": 0.5391457453148175,
+      "v16_nmae_improvement_pct": 35.16138944478857,
+      "v10_corr": -0.084851234611947,
+      "v16_corr": 0.818394034835229
+    },
+    "tip_spread": {
+      "display": "tip_spread",
+      "v10_nmae": 2.045799635076076,
+      "v16_nmae": 1.0806543784759413,
+      "v16_nmae_improvement_pct": 47.17691997067173,
+      "v10_corr": 0.038504828606205375,
+      "v16_corr": 0.0748620613967439
+    }
+  },
+  "overall": {
+    "mean_v10_nmae": 1.3810089487166612,
+    "mean_v16_nmae": 0.674179825205434,
+    "overall_nmae_improvement_pct": 51.18208134480713,
+    "mean_v10_corr": 0.37011600468950356,
+    "mean_v16_corr": 0.6018091241266593,
+    "v16_param_wins": 6,
+    "n_params": 6
+  },
+  "verdict": "v16 beats V10 on 6/6 params; mean nMAE 1.381->0.674 (+51% lower error), mean corr +0.37->+0.60.",
+  "table_markdown": "| param | V10 nMAE | v16 nMAE | v16 improvement | V10 corr | v16 corr |\n|---|---|---|---|---|---|\n| arc(length) | 0.517 | 0.395 | +24% | +0.841 | +0.877 |\n| curl | 0.791 | 0.592 | +25% | +0.515 | +0.702 |\n| clump | 3.319 | 0.962 | +71% | +0.210 | +0.328 |\n| straight | 0.781 | 0.477 | +39% | +0.701 | +0.811 |\n| lift_arc | 0.832 | 0.539 | +35% | -0.085 | +0.818 |\n| tip_spread | 2.046 | 1.081 | +47% | +0.039 | +0.075 |\n| **MEAN** | **1.381** | **0.674** | **+51%** | **+0.370** | **+0.602** |"
+}

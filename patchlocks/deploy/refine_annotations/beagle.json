@@ -1,0 +1,7 @@
+{
+  "animal": "beagle",
+  "notes": [
+    "Uses automatic geometry:important:tail_auto region labels.",
+    "Per-animal local grow parameters are stored in beagle.env."
+  ]
+}

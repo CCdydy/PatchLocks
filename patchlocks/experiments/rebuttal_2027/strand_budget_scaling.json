@@ -1,0 +1,33 @@
+{
+ "pipeline_total_s": 582.0,
+ "prior_extraction_s": 450.0,
+ "fit": {
+  "views": 12,
+  "adam_steps": 300,
+  "proxy_roots": 60000,
+  "note": "samples a fixed proxy set (--max_roots 60000), so cost cannot depend on the groom budget"
+ },
+ "grow_scaling": [
+  {
+   "budget": 300000,
+   "roots": 296907,
+   "grow_s": 9.03
+  },
+  {
+   "budget": 600000,
+   "roots": 593056,
+   "grow_s": 11.04
+  },
+  {
+   "budget": 1200000,
+   "roots": 1187423,
+   "grow_s": 18.33
+  },
+  {
+   "budget": 2400000,
+   "roots": 2375927,
+   "grow_s": 33.14
+  }
+ ],
+ "headline": "8x the strand budget (300K->2.4M) adds 24s to a 582s pipeline (+4.1%); prior extraction and the fit are unchanged."
+}
