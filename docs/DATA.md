@@ -2,8 +2,18 @@
 
 [`data/manifest.txt`](../data/manifest.txt) is the authoritative list: every checkpoint and
 dataset the code reads, its path relative to the repository root, its size, and what uses it.
-None of it is tracked by git. Arrange the files under a data root with the same relative layout
-and run `bash pipeline/00_link_data.sh /path/to/DATA_ROOT`.
+None of it is tracked by git.
+
+* **Weights** ([zengzzy/PatchLocks](https://huggingface.co/zengzzy/PatchLocks)):
+  `bash scripts/download_weights.sh` downloads the 9 checkpoints (549 MB) to their paths in the
+  repository and verifies them against `scripts/weights_SHA256SUMS.txt`.
+* **Our data** ([zengzzy/PatchLocks-data](https://huggingface.co/datasets/zengzzy/PatchLocks-data),
+  ~27 GB): `bash scripts/download_data.sh /path/to/DATA_ROOT [training|testsets|animals|figures]`
+  downloads all or part of it and links it in. The dataset uses the data-root layout.
+* **Third-party data** (the `derived` and `thirdparty` categories) is not redistributed: obtain the
+  captures and meshes from NeuralFur / ARTEMIS (below), place them under the same data root with
+  the paths in the manifest, and run `bash pipeline/00_link_data.sh /path/to/DATA_ROOT`
+  (it skips anything already present).
 
 | Category | Contents | Size |
 |---|---|---|

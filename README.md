@@ -13,18 +13,32 @@ reconstructs a beagle, a white tiger, a panda and a cat.
 
 ![Method overview](docs/assets/pipeline.jpg)
 
+## Download & use
+
+| | |
+|---|---|
+| **Code** | this repository |
+| **Weights** (549 MB) | [huggingface.co/zengzzy/PatchLocks](https://huggingface.co/zengzzy/PatchLocks) — `bash scripts/download_weights.sh` |
+| **Data** (28 GB, choose subsets) | [huggingface.co/datasets/zengzzy/PatchLocks-data](https://huggingface.co/datasets/zengzzy/PatchLocks-data) — `bash scripts/download_data.sh DATA_ROOT [training\|testsets\|animals\|figures]` |
+| **Real-animal captures** | from [NeuralFur](https://github.com/Vanessik/NeuralFur) and [ARTEMIS](https://github.com/HaiminLuo/Artemis) (not redistributed) |
+
+[docs/USAGE.md](docs/USAGE.md) explains every download option, which downloads each task needs,
+how to obtain the real-animal inputs, and how to load and export the reconstructed grooms.
+
 ## Quick start
 
 ```bash
 # 1. environment (Python 3.11, CUDA 12.8)
 conda create -n patchlocks python=3.11 -y && conda activate patchlocks
 pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
-pip install -r requirements.txt
+pip install -r requirements.txt huggingface_hub
 
-# 2. weights and data (layout: data/manifest.txt)
-bash pipeline/00_link_data.sh /path/to/PatchLocks_data
+# 2. weights (549 MB) and data from Hugging Face, checksummed and linked into place
+bash scripts/download_weights.sh                       # huggingface.co/zengzzy/PatchLocks
+bash scripts/download_data.sh /path/to/DATA_ROOT       # huggingface.co/datasets/zengzzy/PatchLocks-data (~27 GB)
 
 # 3. reconstruct the four animals with the paper model, then render them like the paper
+#    (needs the NeuralFur / ARTEMIS animal inputs, which are not redistributed: docs/DATA.md)
 bash pipeline/04_reconstruct_animals.sh          # -> outputs/refine_v16/<animal>/grow/surfpack_v2fur.npz
 bash pipeline/05_render_paper_views.sh           # -> outputs/renders/refine_v16/
 ```
@@ -81,6 +95,7 @@ Details, the table-by-table status and known issues are in
 
 | Document | Contents |
 |---|---|
+| [docs/USAGE.md](docs/USAGE.md) | downloads, what each task needs, third-party inputs, using the grooms |
 | [docs/PIPELINE.md](docs/PIPELINE.md) | stages, the steps inside a reconstruction, determinism |
 | [docs/DATA.md](docs/DATA.md) | weights and datasets, sources and licenses, how our data was generated |
 | [docs/NEW_ANIMAL.md](docs/NEW_ANIMAL.md) | preprocessing a new animal |
