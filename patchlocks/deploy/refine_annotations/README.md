@@ -25,3 +25,5 @@ Current status:
   previous tail/head confusion and separates face/ears/tail before grow.
 - `beagle` and `panda`: keep automatic region labels, but have their own local
   grow parameters so paw/leg/ear/tail polish can diverge per animal.
+- `colmap_template.env`: the starting recipe for a new animal from a COLMAP capture
+  (docs/NEW_ANIMAL.md); rule-based labels for it come from `label_patch_regions.py`.

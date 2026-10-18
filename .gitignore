@@ -40,3 +40,6 @@ outputs/
 /v2_results/refine_v16_paper_smooth/global4_champagne
 /v2_results/paper_cover_patch/beagle_p855
 /_baselines/surf_render
+
+# New-animal inputs (docs/NEW_ANIMAL.md); data, not tracked
+/patchlocks/deploy/inputs/

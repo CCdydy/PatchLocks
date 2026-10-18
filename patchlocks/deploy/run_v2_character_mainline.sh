@@ -15,6 +15,8 @@ set -euo pipefail
 #   1d  synthesize one clean V1-style representative swatch      build_canon_swatch.py
 #   2   multi-view direction fit (NO oracle; length is opt-in)   patch_graph_opt_geo.py
 #   3   V1-style grow: PoU roots, density, swatch, scale, Step2  grow_v2_region_prior.py
+#   3b  optional: per-patch length from all-view silhouettes,    calibrate_patch_length.py
+#       then grow again (SILHOUETTE_LENGTH_ITERS, default 0)
 #   R   visual QA render                                         render_dog_fur_pro.py
 #
 # Required:
@@ -387,12 +389,35 @@ if [[ "${GROW_NO_POU:-0}" == "1" ]]; then grow_args+=(--no_pou); echo "  [ablati
 "$PY" "${grow_args[@]}"
 FUR="$GROW_OUT/surfpack_v2fur.npz"
 
+# Step3b (optional, off by default): refine Step2's per-patch length against the fur silhouettes of
+# every capture view, then grow again (calibrate_patch_length.py). Needs Step2 params, DATA_DIR, MESH.
+SIL_ITERS="${SILHOUETTE_LENGTH_ITERS:-0}"
+if [[ "$SIL_ITERS" -gt 0 ]]; then
+  if [[ -z "$PATCH_PARAMS" || -z "$DATA_DIR" || -z "$MESH" ]]; then
+    echo "ERROR: SILHOUETTE_LENGTH_ITERS needs Step2 patch params, DATA_DIR and MESH" >&2
+    exit 2
+  fi
+  for it in $(seq 1 "$SIL_ITERS"); do
+    echo "== Step3b: silhouette length refinement $it/$SIL_ITERS =="
+    SIL_PP="$OUTDIR/patch_params_silhouette$it.npz"
+    "$PY" patchlocks/deploy/calibrate_patch_length.py --data_dir "$DATA_DIR" --mesh "$MESH" --groom "$FUR" \
+      --surfpack "$PACK" --patch_params "$PATCH_PARAMS" --out "$SIL_PP" \
+      --regions "${SILHOUETTE_LENGTH_REGIONS:-body,legs}" --region_prior "$REGION_PRIOR" \
+      --exclude "${SILHOUETTE_LENGTH_EXCLUDE:-}"
+    PATCH_PARAMS="$SIL_PP"
+    for i in "${!grow_args[@]}"; do
+      if [[ "${grow_args[$i]}" == "--patch_params" ]]; then grow_args[$((i + 1))]="$PATCH_PARAMS"; fi
+    done
+    "$PY" "${grow_args[@]}"
+  done
+fi
+
 if [[ -n "$MESH" ]]; then
   echo "== Render: hair-BSDF visual QA =="
   "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \
     --fur "$FUR" --mesh "$MESH" --out "$RENDER_OUT" \
     --views "${RENDER_VIEWS:-6}" --res "${RENDER_RES:-1280}" --samples "${RENDER_SAMPLES:-40}" \
-    --up "${RENDER_UP:-y}" --camdist "${RENDER_CAMDIST:-0.5}" \
+    --up="${RENDER_UP:-y}" --camdist "${RENDER_CAMDIST:-0.5}" \
     --flat "${RENDER_FLAT:-0.78,0.78,0.74}" --spec "${RENDER_SPEC:-0.22}" \
     --skin "${RENDER_SKIN:-0.22,0.16,0.12}"
 fi

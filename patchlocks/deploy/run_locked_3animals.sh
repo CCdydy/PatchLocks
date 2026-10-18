@@ -95,6 +95,20 @@ DATA_DIR[panda]=patchlocks/datasets/neuralfur/extracted/data/Artemis/panda_proce
 # images_2/, orientations_2/ and 3d_gaussian_splatting/.../30000_matrices.pkl).
 DATA_DIR[cat]=patchlocks/deploy/neuralfur_cat_official/realviews/nf_data_walk_final_f0
 
+# Vertical axis for the renders: y, or patchlocks/deploy/inputs/<animal>/up.txt (e.g. -y for COLMAP)
+up_of() { local f="patchlocks/deploy/inputs/$1/up.txt"; [[ -f "$f" ]] && tr -d '[:space:]' < "$f" || echo y; }
+
+# Other animals: inputs follow the convention patchlocks/deploy/inputs/<animal>/
+#   surfpack/surface_patch_dataset.npz  geopatch/geodesic_patchpack.npz  nf_data/  furless.obj
+#   views.txt (optional): comma-separated Step-2 fit views (docs/NEW_ANIMAL.md)
+for a in $ANIMALS; do
+  if [[ -z "${PACK[$a]:-}" ]]; then
+    IN="patchlocks/deploy/inputs/$a"
+    PACK[$a]="$IN/surfpack/surface_patch_dataset.npz"; GEOPACK[$a]="$IN/geopatch/geodesic_patchpack.npz"
+    DATA_DIR[$a]="$IN/nf_data"; MESH[$a]="$IN/furless.obj"
+  fi
+done
+
 for a in $ANIMALS; do
   echo "######################## $a ########################"
   # RECIPE_SUFFIX selects a recipe variant, e.g. RECIPE_SUFFIX=_paper_smooth -> panda_paper_smooth.env
@@ -152,8 +166,10 @@ for a in $ANIMALS; do
     # a plain scalar to the child.
     OUTDIR_A="$OUTROOT/$a${RECIPE_SUFFIX:-}"
     mkdir -p "$OUTDIR_A"
+    VIEWS_A="${VIEWS:-}"
+    [[ -z "$VIEWS_A" && -f "patchlocks/deploy/inputs/$a/views.txt" ]] && VIEWS_A="$(tr -d '[:space:]' < "patchlocks/deploy/inputs/$a/views.txt")"
     PACK="${PACK[$a]}" OUTDIR="$OUTDIR_A" GEOPACK="${GEOPACK[$a]}" \
-      DATA_DIR="${DATA_DIR[$a]}" MESH="${MESH[$a]}" bash "$WRAP"
+      DATA_DIR="${DATA_DIR[$a]}" MESH="${MESH[$a]}" VIEWS="$VIEWS_A" RENDER_UP="$(up_of "$a")" bash "$WRAP"
   )
   echo "  -> $OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz"
 done
@@ -165,7 +181,7 @@ for a in $ANIMALS; do
   for v in 1 3; do
     "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \
       --fur "$OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
-      --only_view $v --views 4 --res 1536 --samples 128 --up y --camdist 0.5 \
+      --only_view $v --views 4 --res 1536 --samples 128 --up="$(up_of "$a")" --camdist 0.5 \
       --flat 0.78,0.78,0.74 --spec 0.22 --skin 0.66,0.66,0.66 --transparent \
       --out_name "${a}_detail_v${v}.png" > "$OUT/detail_v$v.log" 2>&1
   done
@@ -180,7 +196,7 @@ for a in $ANIMALS; do
     "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \
       --fur "$OUTROOT/$a${RECIPE_SUFFIX:-}/grow/surfpack_v2fur.npz" --mesh "${MESH[$a]}" --out "$OUT" \
       --only_view $v --views 4 --res "${FULL_SIDE_RES:-1536}" --samples "${FULL_SIDE_SAMPLES:-40}" \
-      --up y --camdist "${FULL_SIDE_CAMDIST:-2.3}" \
+      --up="$(up_of "$a")" --camdist "${FULL_SIDE_CAMDIST:-2.3}" \
       --flat 0.78,0.78,0.74 --spec 0.22 --skin 0.66,0.66,0.66 --transparent \
       --out_name "${a}_side_full_v${v}.png" > "$OUT/side_v$v.log" 2>&1
   done

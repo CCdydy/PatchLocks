@@ -20,7 +20,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 export OUTROOT="${OUTROOT:-outputs/refine_v16}"
 export ANIMALS="${ANIMALS:-beagle whiteTiger panda cat}"
 require "${MODEL_PATH:-${GEO_DIR:-patchlocks/datasets/v16/e2a_cw15}/v14_best.pt}"
-for a in $ANIMALS; do require "patchlocks/deploy/neuralfur_${a}_official"; done
+for a in $ANIMALS; do
+  case "$a" in
+    beagle|whiteTiger|panda|cat) require "patchlocks/deploy/neuralfur_${a}_official" ;;
+    *) require "patchlocks/deploy/inputs/$a/surfpack/surface_patch_dataset.npz" "prepare it first: docs/NEW_ANIMAL.md" ;;
+  esac
+done
 
 step "reconstruct: $ANIMALS -> $OUTROOT"
 bash patchlocks/deploy/run_locked_3animals.sh
