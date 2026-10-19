@@ -246,6 +246,9 @@ def main():
     ap.add_argument("--max_backfill", type=int, default=300)
     ap.add_argument("--cover_iters", type=int, default=4)
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--nofur_small_components", type=float, default=0.0,
+                    help="faces of connected components smaller than this fraction of all faces grow no fur "
+                         "(eyes, teeth, tongue modelled as separate pieces); 0 = off")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     rng = np.random.default_rng(args.seed)
@@ -257,6 +260,11 @@ def main():
     annotations = load_annotations(args.annotations, len(V))
     nofur_v = mark_vertices(len(V), annotations, NO_FUR_PARTS)
     nofur_face = nofur_v[F].mean(1) > 0.34
+    if args.nofur_small_components > 0:
+        comp = trimesh.graph.connected_component_labels(mesh.face_adjacency, node_count=len(F))
+        small = np.bincount(comp) < args.nofur_small_components * len(F)
+        nofur_face |= small[comp]
+        print(f"no fur on {int(small.sum())} small components ({int(small[comp].sum())} faces)", flush=True)
     grow_face = ~nofur_face
     face_part = face_part_ids(F, annotations, len(V))
     base_radius = args.base_radius * diag

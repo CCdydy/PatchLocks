@@ -328,6 +328,8 @@ grow_args=(
   --torso_lift_mode "${TORSO_LIFT_MODE:-random}"
   --torso_lift_smooth_k "${TORSO_LIFT_SMOOTH_K:-8}"
   --torso_lift_smooth_iters "${TORSO_LIFT_SMOOTH_ITERS:-4}"
+  --length_soft_caps "${LENGTH_SOFT_CAPS:-}"
+  --length_soft_cap_slope "${LENGTH_SOFT_CAP_SLOPE:-0.35}"
   --out "$GROW_OUT"
   --target_arclen "${TARGET_ARCLEN:-0}"
   --target_strands "${TARGET_STRANDS:-0}"
@@ -403,7 +405,7 @@ if [[ "$SIL_ITERS" -gt 0 ]]; then
     "$PY" patchlocks/deploy/calibrate_patch_length.py --data_dir "$DATA_DIR" --mesh "$MESH" --groom "$FUR" \
       --surfpack "$PACK" --patch_params "$PATCH_PARAMS" --out "$SIL_PP" \
       --regions "${SILHOUETTE_LENGTH_REGIONS:-body,legs}" --region_prior "$REGION_PRIOR" \
-      --exclude "${SILHOUETTE_LENGTH_EXCLUDE:-}"
+      --exclude "${SILHOUETTE_LENGTH_EXCLUDE:-}" --pct "${SILHOUETTE_LENGTH_PCT:-90}"
     PATCH_PARAMS="$SIL_PP"
     for i in "${!grow_args[@]}"; do
       if [[ "${grow_args[$i]}" == "--patch_params" ]]; then grow_args[$((i + 1))]="$PATCH_PARAMS"; fi

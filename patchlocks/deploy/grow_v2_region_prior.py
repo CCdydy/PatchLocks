@@ -824,6 +824,10 @@ def main():
                     help="nearest patch count for --torso_lift_mode smooth")
     ap.add_argument("--torso_lift_smooth_iters", type=int, default=4,
                     help="surface-field smoothing iterations for --torso_lift_mode smooth")
+    ap.add_argument("--length_soft_caps", default="",
+                    help="region:metres,... soft maximum strand length per region (e.g. body:0.03,tail:0.05); "
+                         "length beyond the cap is compressed by --length_soft_cap_slope. Empty = off")
+    ap.add_argument("--length_soft_cap_slope", type=float, default=0.35)
     ap.add_argument("--torso_lift_seed", type=int, default=12345,
                     help="RNG seed for the --torso_lift_frac random strand selection (deterministic).")
     ap.add_argument("--comb_blend", type=float, default=0.0,
@@ -1761,6 +1765,28 @@ def main():
         arc = np.linalg.norm(np.diff(strands, axis=1), axis=2).sum(1)
         print(f"  tail_length={args.tail_length_policy} | {tail_length_summary}", flush=True)
 
+    # ---- soft per-region maximum length (realistic fur depth) -------------------
+    # Per-patch length ratios (Step 2, silhouette refinement) can leave a long tail of very long
+    # strands that read as spikes; compress the length beyond a per-region cap, keeping the shape.
+    if args.length_soft_caps:
+        caps = {}
+        for tok in args.length_soft_caps.split(","):
+            name, val = tok.split(":")
+            caps[name.strip()] = float(val)
+        rr_ok = (root_row >= 0) & (root_row < len(patch_region))
+        root_reg = np.full(len(strands), "", dtype=object)
+        root_reg[rr_ok] = patch_region[root_row[rr_ok]].astype(str)
+        cap = np.array([caps.get(r, np.inf) for r in root_reg], np.float64)
+        over = arc > cap
+        new_arc = arc.astype(np.float64).copy()
+        new_arc[over] = cap[over] + (arc[over] - cap[over]) * float(args.length_soft_cap_slope)
+        fac = (new_arc / np.maximum(arc, 1e-9)).astype(np.float32)
+        strands = strands[:, :1] + (strands - strands[:, :1]) * fac[:, None, None]
+        arc = np.linalg.norm(np.diff(strands, axis=1), axis=2).sum(1)
+        print("  length_soft_caps: " + "; ".join(
+            f"{r}: {int((over & (root_reg == r)).sum())}/{int((root_reg == r).sum())} over {c * 100:.1f} cm"
+            for r, c in caps.items()), flush=True)
+
     op = os.path.join(args.out, "surfpack_v2fur.npz")
     np.savez(
         op,
@@ -1848,6 +1874,8 @@ def main():
         region_flow_policy=np.asarray(args.region_flow_policy),
         region_flow_summary=np.asarray(region_flow_summary),
         region_detail_scale=region_detail_scale.astype(np.float32),
+        length_soft_caps=np.asarray(args.length_soft_caps),
+        length_soft_cap_slope=np.float32(args.length_soft_cap_slope),
         region_detail_keep_prob=region_detail_keep_prob.astype(np.float32),
         region_detail_tail_scale=np.float32(args.region_detail_tail_scale),
         region_detail_tail_keep=np.float32(args.region_detail_tail_keep),

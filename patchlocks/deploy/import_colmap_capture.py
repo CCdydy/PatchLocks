@@ -94,6 +94,37 @@ def mesh_silhouette(V, F, K, R, t, W, H):
     return m
 
 
+def floor_negatives(V, K, R, t, W, H, meshmask, up, n=24, keep=8, ring=(0.12, 0.25), clear_px=60):
+    """Negative SAM2 prompts on the floor around the animal (a stage it stands on is not part of it).
+
+    The floor is the plane through the lowest mesh point along `up`; points on two rings around the
+    mesh footprint are projected, and those in the image and away from the projected mesh are kept.
+    """
+    s = -1.0 if up.startswith("-") else 1.0
+    ax = "xyz".index(up.lstrip("+-"))
+    hgt = s * V[:, ax]
+    floor = V[np.argmin(hgt)].copy()
+    c = V.mean(0)
+    c[ax] = floor[ax]
+    flat = V.copy()
+    flat[:, ax] = floor[ax]
+    r0 = np.linalg.norm(flat - c, axis=1).max()
+    e1 = np.eye(3)[(ax + 1) % 3]
+    e2 = np.eye(3)[(ax + 2) % 3]
+    ang = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    pts = np.concatenate([c + (r0 + rr) * (np.cos(ang)[:, None] * e1 + np.sin(ang)[:, None] * e2) for rr in ring])
+    cam = pts @ R.T + t
+    front = cam[:, 2] > 1e-6
+    uv = cam[:, :2] / np.where(front, cam[:, 2], 1.0)[:, None] * np.array([K[0, 0], K[1, 1]]) + np.array([K[0, 2], K[1, 2]])
+    far = cv2.dilate(meshmask, np.ones((2 * clear_px + 1, 2 * clear_px + 1), np.uint8)) == 0
+    ok = front & (uv[:, 0] >= 0) & (uv[:, 0] < W) & (uv[:, 1] >= 0) & (uv[:, 1] < H)
+    ok[ok] = far[uv[ok, 1].astype(int), uv[ok, 0].astype(int)]
+    cand = uv[ok]
+    if len(cand) > keep:
+        cand = cand[np.linspace(0, len(cand) - 1, keep).round().astype(int)]
+    return cand
+
+
 def clean_mask(fg, meshmask, open_px):
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (open_px, open_px))
     fg = cv2.morphologyEx(fg, cv2.MORPH_OPEN, k)
@@ -115,34 +146,37 @@ def clean_mask(fg, meshmask, open_px):
 
 
 class Sam2Segmenter:
-    def __init__(self, model_id):
+    def __init__(self, model_id, max_area=2.5):
         import torch
+        self.max_area = max_area
         from transformers import Sam2Model, Sam2Processor
         self.torch = torch
         self.proc = Sam2Processor.from_pretrained(model_id)
         self.net = Sam2Model.from_pretrained(model_id).cuda().eval()
 
-    def __call__(self, rgb, meshmask, n_points=8, seed=0):
+    def __call__(self, rgb, meshmask, n_points=8, seed=0, negatives=()):
         er = cv2.erode(meshmask, np.ones((15, 15), np.uint8))
         yy, xx = np.nonzero(er if er.any() else meshmask)
         sel = np.random.default_rng(seed).choice(len(xx), min(n_points, len(xx)), replace=False)
         ys, xs = np.nonzero(meshmask)
         m = 0.08 * max(xs.max() - xs.min(), ys.max() - ys.min())
         box = [[[float(xs.min() - m), float(ys.min() - m), float(xs.max() + m), float(ys.max() + m)]]]
-        pts = [[[[float(xx[i]), float(yy[i])] for i in sel]]]
-        inp = self.proc(images=rgb, input_points=pts, input_labels=[[[1] * len(sel)]], input_boxes=box,
-                        return_tensors="pt").to("cuda")
+        pos = [[float(xx[i]), float(yy[i])] for i in sel]
+        neg = [[float(x), float(y)] for x, y in negatives]
+        inp = self.proc(images=rgb, input_points=[[pos + neg]], input_labels=[[[1] * len(pos) + [0] * len(neg)]],
+                        input_boxes=box, return_tensors="pt").to("cuda")
         with self.torch.no_grad():
             o = self.net(**inp, multimask_output=True)
         masks = self.proc.post_process_masks(o.pred_masks.cpu(), inp["original_sizes"])[0][0].numpy() > 0
         scores = o.iou_scores[0, 0].cpu().numpy()
-        dil = cv2.dilate(meshmask, np.ones((61, 61), np.uint8)) > 0
         mm = meshmask > 0
-
-        def score(k):
-            a = max(int(masks[k].sum()), 1)
-            return 0.5 * (masks[k] & mm).sum() / a + 0.5 * (masks[k] & dil).sum() / a + 0.01 * float(scores[k])
-        return masks[max(range(len(masks)), key=score)].astype(np.uint8)
+        # The whole animal is the largest candidate that covers the furless mesh: long fur and a
+        # curled tail reach far outside the mesh, so preferring masks that hug the mesh cuts them
+        # off. The area cap keeps the background out.
+        whole = [k for k in range(len(masks))
+                 if (masks[k] & mm).sum() >= 0.9 * mm.sum() and masks[k].sum() <= self.max_area * mm.sum()]
+        best = max(whole, key=lambda k: masks[k].sum()) if whole else int(np.argmax(scores))
+        return masks[best].astype(np.uint8)
 
 
 def main():
@@ -155,6 +189,10 @@ def main():
     ap.add_argument("--mask", choices=["sam2", "mesh"], default="sam2",
                     help="sam2: SAM2 prompted by the projected mesh; mesh: projected mesh only (no fur)")
     ap.add_argument("--sam2_model", default="facebook/sam2-hiera-large")
+    ap.add_argument("--up", default="", help="axis pointing up in the capture frame (e.g. -y): adds negative "
+                    "SAM2 prompts on the floor around the animal so a stage is not segmented with it")
+    ap.add_argument("--max_mask_over_mesh", type=float, default=2.5,
+                    help="largest SAM2 mask area accepted, relative to the projected furless mesh")
     ap.add_argument("--orientation_sigma", type=float, default=4.0)
     ap.add_argument("--qa", action="store_true", help="also write mask overlays to <out>/qa/")
     args = ap.parse_args()
@@ -168,7 +206,7 @@ def main():
     for sub in ["images_2", "masks_2/body", "masks_2/hair", "masks_2/bald", "orientations_2/angles",
                 "orientations_2/vars", "3d_gaussian_splatting/GS_/cameras"] + (["qa"] if args.qa else []):
         os.makedirs(os.path.join(args.out, sub), exist_ok=True)
-    seg = Sam2Segmenter(args.sam2_model) if args.mask == "sam2" else None
+    seg = Sam2Segmenter(args.sam2_model, args.max_mask_over_mesh) if args.mask == "sam2" else None
 
     mats, views = {}, []
     for i, name in enumerate(names):
@@ -189,7 +227,8 @@ def main():
         meshmask = mesh_silhouette(V, F, K, R, t, W, H)
         rgb = cv2.cvtColor(und, cv2.COLOR_BGR2RGB)
         if seg is not None:
-            mask = clean_mask(seg(rgb, meshmask), meshmask, open_px=max(3, int(round(9 * args.scale * 2)) | 1))
+            negs = floor_negatives(V, K, R, t, W, H, meshmask, args.up) if args.up else ()
+            mask = clean_mask(seg(rgb, meshmask, negatives=negs), meshmask, open_px=max(3, int(round(9 * args.scale * 2)) | 1))
         else:
             mask = meshmask
         vid = f"{i:04d}"
