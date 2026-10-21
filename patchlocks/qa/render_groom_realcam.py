@@ -130,6 +130,8 @@ def main():
     ap.add_argument("--exposure", type=float, default=0.0, help="view exposure in stops")
     ap.add_argument("--device", default="optix", choices=["optix", "cuda"],
                     help="cuda avoids OptiX's curve intersector (it can fault on some grooms)")
+    ap.add_argument("--filter_width", type=float, default=0.0, help="pixel filter width in pixels; 0 = Blender's 1.5")
+    ap.add_argument("--bounces", type=int, default=0, help="light bounces (diffuse/transmission); 0 = Blender's defaults")
     ap.add_argument("--radius_mul", type=float, default=1.0)
     ap.add_argument("--length_mul", type=float, default=1.0,
                     help="render-only strand length multiplier about each root")
@@ -302,6 +304,16 @@ def main():
         dv.use = dv.type == dev_type
     sc.cycles.device = "GPU"
     sc.cycles.samples = a.samples
+    if a.filter_width > 0:
+        sc.cycles.filter_width = a.filter_width          # pixels; photos carry lens blur
+    if a.bounces > 0:
+        # dense light fur needs many scattering events between strands; Blender's default of 4
+        # diffuse bounces leaves the inside of a white coat grey
+        sc.cycles.max_bounces = a.bounces
+        sc.cycles.diffuse_bounces = a.bounces
+        sc.cycles.glossy_bounces = min(a.bounces, 8)
+        sc.cycles.transmission_bounces = a.bounces
+        sc.cycles.transparent_max_bounces = max(a.bounces, 8)
     sc.cycles.use_denoising = True
     try:
         sc.cycles.denoiser = "OPTIX"

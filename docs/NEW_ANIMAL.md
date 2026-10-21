@@ -111,8 +111,20 @@ instead of by eye:
    such as the hind legs' feathering. `patchlocks/deploy/naturalize_strands.py` curves each
    strand back towards the skin (`NATURALIZE_DROOP`, 0.35 of its length at the tip), sways it
    sideways (`NATURALIZE_SWAY`, 0.12), varies its length (+-15 %) and thins it
-   (`NATURALIZE_RADIUS_SCALE`, 0.65); in our renders the coat read softer and closer to the photos.
-8. Against spikes only: a soft cap per region (`LENGTH_SOFT_CAPS=body:<m>,tail:<m>,...`, metres;
+   (`NATURALIZE_RADIUS_SCALE`, 0.35: the grow's radius is set to cover the skin, far thicker than
+   hair, and thick strands read as straw). Judge it with
+   `python patchlocks/qa/coat_texture_stats.py --data_dir <in>/nf_data --views <v,...> --renders <dir>/render_fur_{view}_raw.png`:
+   the local contrast of the coat (luminance spread in 9x9 windows) is a few times the photo's
+   while individual strands stand out; in our tests thinner strands and the render settings below
+   halved it. (`--undercoat_frac` adds an optional short, curly undercoat; its effect was small.)
+8. Where the coat is too thick or too thin: `python patchlocks/qa/fur_depth_map.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --regions <run>/v2_region_prior.annotated.npz --out_dir <run>/fur_depth`
+   compares, per vertex, how far the fur reaches beyond the body in the photos and in the groom
+   (median over the views that see the vertex on the outline), with a colour map. Step 3b matches
+   each patch's outer fringe; in our tests that left the bulk of the coat too thick on the back,
+   lower legs and paws. The outline is the envelope of all fur near it, so a per-vertex
+   correction of strand length from this map did not converge (a tail lying over the rump or a
+   neighbour's feathering holds the outline out); use it to choose region scales.
+9. Against spikes only: a soft cap per region (`LENGTH_SOFT_CAPS=body:<m>,tail:<m>,...`, metres;
    length beyond the cap is kept at `LENGTH_SOFT_CAP_SLOPE`, 0.35) and a trim to the visual hull of
    the masks (`python patchlocks/deploy/carve_groom_with_hull.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --out <run>/grow/surfpack_v2fur_carved.npz`,
    which shortens strands that leave the hull about their root). Both raise the silhouette
@@ -120,7 +132,7 @@ instead of by eye:
    and stiffens the whole coat, and the trim ends many strands exactly on the voxel surface of the
    hull, which shows as bands of tips along the outline (the back line in a side view). Compare
    renders with the photos before adding either.
-9. Density: `TARGET_STRANDS` (3M in the template; the paper animals use 1.2M). More strands give
+10. Density: `TARGET_STRANDS` (3M in the template; the paper animals use 1.2M). More strands give
    a denser, smoother coat.
 
 ## Showcase appearance: photo colours
@@ -141,7 +153,7 @@ only; the groom geometry is unchanged):
    that is part of the main surface (the nose): strands rooted within `--expose_bald` of a feature
    are removed and shortened up to `--expose_soft`.
 5. Render at the capture cameras with the skin under the fur:
-   `blender -b --factory-startup --python patchlocks/qa/render_groom_realcam.py -- --surfpack <run>/grow/surfpack_v2fur_photo.npz --matrices <in>/nf_data/3d_gaussian_splatting/GS_/cameras/30000_matrices.pkl --view <v> --W <w> --H <h> --out <dir> --tag fur --subsample 0 --srgb_colors --mesh <in>/furless_sub2.obj --mesh_colors <in>/appearance/albedo_sub2_srgb.npy --fur_shader fiber --light_rig camera --world_rgb 0.9,0.9,0.9 --world_strength 1.3 --key_scale 0.3 --view_transform Standard --exposure 0.8`
+   `blender -b --factory-startup --python patchlocks/qa/render_groom_realcam.py -- --surfpack <run>/grow/surfpack_v2fur_photo.npz --matrices <in>/nf_data/3d_gaussian_splatting/GS_/cameras/30000_matrices.pkl --view <v> --W <w> --H <h> --out <dir> --tag fur --subsample 0 --srgb_colors --mesh <in>/furless_sub2.obj --mesh_colors <in>/appearance/albedo_sub2_srgb.npy --fur_shader fiber --light_rig camera --world_rgb 0.9,0.9,0.9 --world_strength 1.3 --key_scale 0.3 --view_transform Standard --exposure 0.8 --filter_width 2.5 --bounces 16`
    (`--mesh_roughness <r.npy>` and `--mesh_specular <s.npy>` give the skin a per-vertex roughness
    and specular level: glossy eyes, and a dark nose that does not mirror the bright, uniform world
    (at the default specular level it turns grey); `--device cuda` if OptiX faults with an illegal
@@ -150,6 +162,9 @@ only; the groom geometry is unchanged):
 Why these settings:
 
 * Skin under the fur: without it the backdrop shows between the strands and the coat turns grey.
+* `--filter_width 2.5 --bounces 16`: the photos carry lens blur, and light needs many bounces
+  between the strands of a dense, light coat; Blender's defaults (1.5 px, 4 diffuse bounces) give
+  a harsher, greyer coat than the photos.
 * `--fur_shader fiber`: the Principled Hair BSDF's white specular lobe renders a saturated coat
   lighter and paler than its baked colour; a diffuse fibre keeps the hue. Set `--exposure` so the
   median luminance over a few views around the animal matches the photos'.

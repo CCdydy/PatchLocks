@@ -9,6 +9,9 @@ angle and curve over towards it along their length, each a little differently. P
   * --sway: a sideways quadratic offset (tangent, across the chord), std as a fraction of length;
   * --length_jitter: length scale drawn from 1 +- this.
   * --radius_scale: thinner strands (the grow's radius covers the skin; thinner reads softer).
+Optionally a double coat: --undercoat_frac of the strands become undercoat, --undercoat_length of
+their length, curving and swaying more and thinner (--undercoat_radius); the rest stay guard hairs.
+A single coat of equal strands matched to the silhouette's fringe is too thick in the bulk.
 Arc length is preserved (before the jitter), and points never go below the root's tangent plane.
 
   python patchlocks/deploy/naturalize_strands.py --groom <run>/grow/surfpack_v2fur.npz \\
@@ -36,6 +39,11 @@ def main():
     ap.add_argument("--sway", type=float, default=0.12)
     ap.add_argument("--length_jitter", type=float, default=0.15)
     ap.add_argument("--radius_scale", type=float, default=1.0, help="multiplies the radius (thinner strands read softer)")
+    ap.add_argument("--undercoat_frac", type=float, default=0.0, help="fraction of strands made undercoat (0 = off)")
+    ap.add_argument("--undercoat_length", type=float, default=0.55)
+    ap.add_argument("--undercoat_droop", type=float, default=0.5)
+    ap.add_argument("--undercoat_sway", type=float, default=0.2)
+    ap.add_argument("--undercoat_radius", type=float, default=0.8)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--chunk", type=int, default=400_000)
     ap.add_argument("--out", required=True)
@@ -54,6 +62,7 @@ def main():
         idx = np.flatnonzero(np.isin(reg[np.clip(row, 0, len(reg) - 1)], a.regions.split(",")))
     S = g["strands"]
     rng = np.random.default_rng(a.seed)
+    under = np.random.default_rng(a.seed + 1).random(len(idx)) < a.undercoat_frac
     t = np.linspace(0, 1, S.shape[1])[None, :, None]
     straight = []
     for c0 in range(0, len(idx), a.chunk):
@@ -67,21 +76,24 @@ def main():
         side = np.cross(n, cu)
         side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-12)
         k = len(ii)
-        dr = a.droop * rng.uniform(0.5, 1.0, k) * arc0
-        sw = a.sway * rng.standard_normal(k) * arc0
+        u = under[c0:c0 + a.chunk]
+        dr = np.where(u, a.undercoat_droop, a.droop) * rng.uniform(0.5, 1.0, k) * arc0
+        sw = np.where(u, a.undercoat_sway, a.sway) * rng.standard_normal(k) * arc0
         off = off - (dr[:, None, None] * t ** 2) * n[:, None] + (sw[:, None, None] * t ** 2) * side[:, None]
         h = (off * n[:, None]).sum(-1, keepdims=True)                      # stay above the skin plane
         off -= np.minimum(h, 0.0) * n[:, None]
         arc1 = np.linalg.norm(np.diff(off, axis=1), axis=2).sum(1)
-        ls = 1.0 + a.length_jitter * rng.uniform(-1, 1, k)
+        ls = (1.0 + a.length_jitter * rng.uniform(-1, 1, k)) * np.where(u, a.undercoat_length, 1.0)
         off *= (ls * arc0 / np.maximum(arc1, 1e-12))[:, None, None]
         S[ii] = (P[:, :1] + off).astype(S.dtype)
         straight.append(np.linalg.norm(off[:, -1], axis=1) / np.maximum(ls * arc0, 1e-12))
     g["strands"] = S
-    if a.radius_scale != 1.0:
+    if a.radius_scale != 1.0 or under.any():
         g["radius"] = g["radius"].astype(np.float32).copy()
         g["radius"][idx] *= a.radius_scale
-    g["naturalize"] = np.asarray(f"regions={a.regions} droop={a.droop} sway={a.sway} length_jitter={a.length_jitter} radius_scale={a.radius_scale}")
+        g["radius"][idx[under]] *= a.undercoat_radius
+    g["naturalize"] = np.asarray(f"regions={a.regions} droop={a.droop} sway={a.sway} length_jitter={a.length_jitter} radius_scale={a.radius_scale} "
+                                 f"undercoat_frac={a.undercoat_frac} undercoat_length={a.undercoat_length}")
     np.savez(a.out, **g)
     st = np.concatenate(straight) if straight else np.zeros(1)
     print(json.dumps({"strands": int(len(idx)), "chord_over_arc_p10_50_90": np.round(np.percentile(st, [10, 50, 90]), 3).tolist()}))

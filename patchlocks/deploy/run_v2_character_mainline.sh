@@ -421,7 +421,7 @@ if [[ -n "${NATURALIZE_REGIONS:-}" ]]; then
   echo "== Step3c: natural strand shape (${NATURALIZE_REGIONS}) =="
   "$PY" patchlocks/deploy/naturalize_strands.py --groom "$FUR" --region_prior "$REGION_PRIOR" \
     --regions "$NATURALIZE_REGIONS" --droop "${NATURALIZE_DROOP:-0.35}" --sway "${NATURALIZE_SWAY:-0.12}" \
-    --length_jitter "${NATURALIZE_LENGTH_JITTER:-0.15}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.65}" \
+    --length_jitter "${NATURALIZE_LENGTH_JITTER:-0.15}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.35}" \
     --out "$GROW_OUT/surfpack_v2fur_nat.npz"
   FUR="$GROW_OUT/surfpack_v2fur_nat.npz"
 fi
