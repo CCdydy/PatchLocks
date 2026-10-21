@@ -27,8 +27,9 @@ mesh supplied in the COLMAP frame, metres). Times are for one RTX PRO 6000.
 
 | # | Step | Command | Time |
 |---|---|---|---|
-| 1 | Import: undistort and halve the photos, SAM2 masks prompted by the projected mesh, structure-tensor orientation (as in the paper), invertible camera matrices | `python patchlocks/deploy/import_colmap_capture.py --colmap <capture>/colmap --mesh furless.obj --out <in>/nf_data --scale 0.5 --up <axis> --qa` (`--up`, e.g. `-y`, the frame's up axis: negative prompts on the floor keep a stage out of the masks; `--exclude` for broken cameras) | 1.5 min |
+| 1 | Import: undistort and halve the photos, SAM2 masks prompted by the projected mesh, structure-tensor orientation (as in the paper), invertible camera matrices | `python patchlocks/deploy/import_colmap_capture.py --colmap <capture>/colmap --mesh furless.obj --out <in>/nf_data --scale 0.5 --up=<axis> --qa` (`--up=-y` etc., the frame's up axis: negative prompts on the floor keep a stage out of the masks; `--exclude` for broken cameras) | 1.5 min |
 | 1b | Accessory masks, only if the animal wears a collar or harness: colour candidates in the slab along the body axis where it is worn prompt SAM2; dark parts touching it (a clasp) are added | `python patchlocks/deploy/segment_accessory_masks.py --data_dir <in>/nf_data --mesh <in>/furless.obj --axis <i> --lo <a> --hi <b>` (check `nf_data/qa/accessory_masks.jpg`) | 2 min |
+| 1c | Fit the furless mesh to the photos (below): label its vertices by region, then move it only where the photos agree it is wrong | `python patchlocks/deploy/label_patch_regions.py --mesh <in>/furless.obj --up=<axis> --forward=<axis> <thresholds> --out <in>/furless_regions.npz`, then `python patchlocks/deploy/fit_furless_mesh.py --mesh <in>/furless.obj --data_dir <in>/nf_data --regions <in>/furless_regions.npz --up=<axis> --out_dir <in>/furless_fit` | 5 min |
 | 2 | Geodesic patch cover (radius 3.5 % of the bbox diagonal, as for the paper animals) | `python patchlocks/deploy/build_geodesic_patchpack.py --mesh <in>/furless.obj --annotations "" --out <in>/geopatch --npatch 1200 --nroots 240000 --base_radius 0.035` (add `--nofur_small_components 0.05` when the mesh models eyes or a tongue as separate pieces: they then grow no fur) | 4 s |
 | 3 | Fit views (12, spread around the animal) and the tangent frame | `python patchlocks/deploy/prepare_fit_views_and_frame.py --data_dir <in>/nf_data --mesh <in>/furless.obj --out_dir <in>` | 10 s |
 | 4 | Surface patch pack | `python patchlocks/deploy/neuralfur_export_surface_patch_dataset.py --pack <in>/geopatch/geodesic_patchpack.npz --data_dir <in>/nf_data --field_pack <in>/tangent_field_xaxis.npz --views $(cat <in>/views.txt) --out <in>/surfpack` | 15 s |
@@ -46,6 +47,25 @@ Checks worth running:
   `patch_graph_opt_geo.project_row` should put nearly all mesh vertices inside the masks.
 * The furless mesh must be an OBJ (the patch tools read OBJ only); convert without reordering
   vertices.
+
+**Fitting the furless mesh (step 1c).** The photos see the coat, not the body, so each view can
+only say two things about the furless mesh: every vertex must lie inside the animal's silhouette
+under at least the thinnest plausible fur of its region (`--band region:d_min:d_max`, metres), and
+the outline of the body may not leave more than the thickest plausible fur between it and the
+silhouette. `fit_furless_mesh.py` visits the views in small random batches (the worst-fitting
+more often) and moves one shared mesh; an as-rigid-as-possible energy keeps the template's anatomy
+and separate small pieces (eyeballs) follow rigidly. Silhouettes also contain long fringes, a tail
+lying against a hip, shadows and segmentation errors, so the mesh is pushed outwards only where
+most views that see a vertex on the outline agree, containment tolerates the mask accuracy
+(3 mm), and with `--up` no vertex sinks below the floor and cameras below the floor (which see the
+paws past the edge of the stage) do not test points near it. `--landmarks` pulls vertex groups
+to triangulated points (eyes, nose). It writes `furless_fit.obj` (the template's vertex order, so
+UVs and labels still apply), `furless_fit_fine.obj` (once Loop-subdivided and refined), an overlay
+per view in `qa/` (silhouette green, template outline blue, fit red) and `report.json`. Use the fit
+as `furless.obj` (keep the template). Its `outline_gap_mm_p10_50_90_by_region` is the fur depth the
+photos show around the body, per region: a check for the recipe's strand length. The fit corrects
+shape locally; it does not repose a limb or a tail (that needs the template's rig). On our capture
+the supplied mesh already agreed with all views to within a few millimetres on the body and legs.
 
 **Tangent frame.** Step 4 passes a constant world-x field so that every patch's tangent frame is
 the frame Step 2 fits orientation in; the fitted orientation then reaches the groom unchanged.
@@ -79,24 +99,27 @@ instead of by eye:
 6. Refine the per-patch length against the silhouettes of all views (Step 3b:
    `SILHOUETTE_LENGTH_ITERS=2 SILHOUETTE_LENGTH_REGIONS=body,legs`). Step 2 fits length on its 12
    fit views; Step 3b (`patchlocks/deploy/calibrate_patch_length.py`) compares a percentile
-   (`SILHOUETTE_LENGTH_PCT`, 60 in the template) of the fur thickness of photo and groom per patch
+   (`SILHOUETTE_LENGTH_PCT`, 90 in the template) of the fur thickness of photo and groom per patch
    over every capture view, multiplies Step 2's length by the ratio (shrunk towards 1 for patches
-   with few samples, smoothed, clipped to 0.7-1.6) and grows again. Matching the 90th percentile
-   instead chases the wispy outer fringe, which straight strands only reach by growing long and
-   spiky. With `SILHOUETTE_LENGTH_EXCLUDE=accessory` the pixels around a collar, which stands off
+   with few samples, smoothed, clipped to 0.7-1.6) and grows again. A lower percentile (60)
+   follows the bulk of the coat rather than its outer fringe and gives a shorter coat; in our
+   side-by-side comparisons with the photos the 90th percentile looked closer. With `SILHOUETTE_LENGTH_EXCLUDE=accessory` the pixels around a collar, which stands off
    the fur, are left out. In our tests two rounds brought the body and leg fur thickness to within
    a few millimetres of the photos'.
-7. Cap the length per region (`LENGTH_SOFT_CAPS=body:<m>,tail:<m>,...`, metres): the strand
-   length beyond a region's cap is kept only at `LENGTH_SOFT_CAP_SLOPE` (0.35). Step 2's per-patch
-   ratios can reach 1.8, so without a cap a few patches grow spikes far beyond the coat. Set the
-   caps a little above the photo thickness measured in step 2 (the soft cap still leaves the
-   longest patches somewhat longer).
-8. Trim the groom to the visual hull of the masks:
-   `python patchlocks/deploy/carve_groom_with_hull.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --out <run>/grow/surfpack_v2fur_carved.npz`.
-   Fur cannot reach outside the silhouettes; strands that leave the hull of all the body masks
-   (a spray off a cheek, spikes off the outline) are shortened about their root until they end on
-   its surface, keeping their shape. It runs in seconds on the GPU and gave the best silhouette
-   agreement in our tests; it needs masks that contain all the fur (check `nf_data/qa`).
+7. Natural strand shape (Step 3c: `NATURALIZE_REGIONS=body,legs`). The grow stamps nearly
+   straight strands, and straight, equally thick strands read as straw, most of all in long fur
+   such as the hind legs' feathering. `patchlocks/deploy/naturalize_strands.py` curves each
+   strand back towards the skin (`NATURALIZE_DROOP`, 0.35 of its length at the tip), sways it
+   sideways (`NATURALIZE_SWAY`, 0.12), varies its length (+-15 %) and thins it
+   (`NATURALIZE_RADIUS_SCALE`, 0.65); in our renders the coat read softer and closer to the photos.
+8. Against spikes only: a soft cap per region (`LENGTH_SOFT_CAPS=body:<m>,tail:<m>,...`, metres;
+   length beyond the cap is kept at `LENGTH_SOFT_CAP_SLOPE`, 0.35) and a trim to the visual hull of
+   the masks (`python patchlocks/deploy/carve_groom_with_hull.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --out <run>/grow/surfpack_v2fur_carved.npz`,
+   which shortens strands that leave the hull about their root). Both raise the silhouette
+   agreement, but both cost realism, so they are not part of the template recipe: the cap shortens
+   and stiffens the whole coat, and the trim ends many strands exactly on the voxel surface of the
+   hull, which shows as bands of tips along the outline (the back line in a side view). Compare
+   renders with the photos before adding either.
 9. Density: `TARGET_STRANDS` (3M in the template; the paper animals use 1.2M). More strands give
    a denser, smoother coat.
 
@@ -119,8 +142,10 @@ only; the groom geometry is unchanged):
    are removed and shortened up to `--expose_soft`.
 5. Render at the capture cameras with the skin under the fur:
    `blender -b --factory-startup --python patchlocks/qa/render_groom_realcam.py -- --surfpack <run>/grow/surfpack_v2fur_photo.npz --matrices <in>/nf_data/3d_gaussian_splatting/GS_/cameras/30000_matrices.pkl --view <v> --W <w> --H <h> --out <dir> --tag fur --subsample 0 --srgb_colors --mesh <in>/furless_sub2.obj --mesh_colors <in>/appearance/albedo_sub2_srgb.npy --fur_shader fiber --light_rig camera --world_rgb 0.9,0.9,0.9 --world_strength 1.3 --key_scale 0.3 --view_transform Standard --exposure 0.8`
-   (`--mesh_roughness <r.npy>`, a per-vertex roughness for the skin, makes the eyes and nose
-   glossy; `--device cuda` if OptiX faults with an illegal address on a dense groom.)
+   (`--mesh_roughness <r.npy>` and `--mesh_specular <s.npy>` give the skin a per-vertex roughness
+   and specular level: glossy eyes, and a dark nose that does not mirror the bright, uniform world
+   (at the default specular level it turns grey); `--device cuda` if OptiX faults with an illegal
+   address on a dense groom.)
 
 Why these settings:
 

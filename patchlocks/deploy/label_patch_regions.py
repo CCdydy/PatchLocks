@@ -22,7 +22,8 @@ chest and the head; the belly line is the lowest point of the trunk between the 
       --out patchlocks/deploy/refine_annotations/<animal>_patch_region.npz
 
 then point refine_annotations/<animal>.json at the npz ({"patch_region_npz": ...}) and set
-INDIVIDUAL_ANNOTATION_JSON in <animal>.env.
+INDIVIDUAL_ANNOTATION_JSON in <animal>.env. With --mesh <furless.obj> instead of --surfpack the
+same rules label the mesh vertices (`vertex_region`, for fit_furless_mesh.py).
 """
 import argparse
 
@@ -37,7 +38,9 @@ def axis(spec, pts):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--surfpack", required=True)
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--surfpack", help="label the patch centres of this surface patch pack")
+    src.add_argument("--mesh", help="label the vertices of this OBJ mesh instead")
     ap.add_argument("--out", required=True)
     ap.add_argument("--up", default="+y", help="axis pointing up, e.g. -y for a COLMAP frame")
     ap.add_argument("--forward", default="+z", help="axis pointing from the tail to the head")
@@ -51,7 +54,10 @@ def main():
     ap.add_argument("--root_height", type=float, required=True, help="tail root height (rump top)")
     ap.add_argument("--tail_base_to", type=float, required=True)
     a = ap.parse_args()
-    c = np.asarray(np.load(a.surfpack, mmap_mode="r", allow_pickle=True)["centers"], np.float64)
+    if a.mesh:
+        c = np.array([[float(x) for x in ln.split()[1:4]] for ln in open(a.mesh) if ln.startswith("v ")])
+    else:
+        c = np.asarray(np.load(a.surfpack, mmap_mode="r", allow_pickle=True)["centers"], np.float64)
     h, f = axis(a.up, c), axis(a.forward, c)
     reg = np.full(len(c), "body", dtype="U24")
     reg[h < a.legs_below] = "legs"
@@ -61,7 +67,7 @@ def main():
     reg[head & (f < a.ears_before) & (h > a.ears_above)] = "ears"
     reg[(f < a.tail_behind) | ((f < a.root_forward) & (h > a.root_height))] = "tail"
     reg[(f >= a.root_forward) & (f < a.tail_base_to) & (h > a.root_height)] = "tail_base"
-    np.savez_compressed(a.out, patch_region=reg)
+    np.savez_compressed(a.out, **({"vertex_region": reg} if a.mesh else {"patch_region": reg}))
     names, counts = np.unique(reg, return_counts=True)
     print(dict(zip(names.tolist(), counts.tolist())))
 

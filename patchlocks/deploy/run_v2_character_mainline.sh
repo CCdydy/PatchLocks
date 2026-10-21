@@ -414,6 +414,18 @@ if [[ "$SIL_ITERS" -gt 0 ]]; then
   done
 fi
 
+# Step3c (optional, off by default): natural strand shape on the given regions (naturalize_strands.py):
+# each strand curves back towards the skin, sways sideways, varies in length and is thinner, so the
+# coat does not read as straw. Writes surfpack_v2fur_nat.npz next to the grow output and uses it.
+if [[ -n "${NATURALIZE_REGIONS:-}" ]]; then
+  echo "== Step3c: natural strand shape (${NATURALIZE_REGIONS}) =="
+  "$PY" patchlocks/deploy/naturalize_strands.py --groom "$FUR" --region_prior "$REGION_PRIOR" \
+    --regions "$NATURALIZE_REGIONS" --droop "${NATURALIZE_DROOP:-0.35}" --sway "${NATURALIZE_SWAY:-0.12}" \
+    --length_jitter "${NATURALIZE_LENGTH_JITTER:-0.15}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.65}" \
+    --out "$GROW_OUT/surfpack_v2fur_nat.npz"
+  FUR="$GROW_OUT/surfpack_v2fur_nat.npz"
+fi
+
 if [[ -n "$MESH" ]]; then
   echo "== Render: hair-BSDF visual QA =="
   "$BLENDER" -b --factory-startup --python patchlocks/deploy/render_dog_fur_pro.py -- \

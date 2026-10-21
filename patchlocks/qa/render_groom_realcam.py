@@ -32,9 +32,10 @@ def srgb_to_linear(c):
     return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4).astype(np.float32)
 
 
-def add_skin(mesh_path, colors_path, rough_path=""):
+def add_skin(mesh_path, colors_path, rough_path="", spec_path=""):
     """Furless mesh under the fur: per-vertex colour (sRGB .npy) or a neutral tone, and optionally a
-    per-vertex roughness (.npy), e.g. glossy eyes and nose on an otherwise matte skin."""
+    per-vertex roughness and specular level (.npy), e.g. glossy eyes and a dark nose on an otherwise
+    matte skin (a bright, uniform world reflected at the default level greys a dark nose)."""
     v, f = read_obj(mesh_path)
     me = bpy.data.meshes.new("skin")
     me.from_pydata(v.tolist(), [], f.tolist())
@@ -66,6 +67,14 @@ def add_skin(mesh_path, colors_path, rough_path=""):
         nt.links.new(rn.outputs["Fac"], bsdf.inputs["Roughness"])
         if "Specular IOR Level" in bsdf.inputs:
             bsdf.inputs["Specular IOR Level"].default_value = 0.5
+    if spec_path and "Specular IOR Level" in bsdf.inputs:
+        spec = np.load(spec_path).astype(np.float32).reshape(-1)
+        assert len(spec) == len(v), "mesh specular does not match the mesh"
+        sa = me.attributes.new("skin_spec", "FLOAT", "POINT")
+        sa.data.foreach_set("value", spec)
+        sn = nt.nodes.new("ShaderNodeAttribute")
+        sn.attribute_name = "skin_spec"
+        nt.links.new(sn.outputs["Fac"], bsdf.inputs["Specular IOR Level"])
     obj.data.materials.append(mat)
     return len(v)
 
@@ -95,6 +104,7 @@ def main():
     ap.add_argument("--mesh", default="", help="furless mesh (OBJ, groom frame) rendered under the fur")
     ap.add_argument("--mesh_colors", default="", help="per-vertex sRGB colours (.npy) for --mesh")
     ap.add_argument("--mesh_roughness", default="", help="per-vertex roughness (.npy) for --mesh (glossy eyes, nose)")
+    ap.add_argument("--mesh_specular", default="", help="per-vertex specular level (.npy) for --mesh (0.5 = IOR 1.5)")
     ap.add_argument("--world_rgb", default="0.55,0.55,0.55")
     ap.add_argument("--world_strength", type=float, default=0.45, help="multiplied by --light_scale")
     ap.add_argument("--key_scale", type=float, default=1.0, help="multiplies the key and fill area lights only")
@@ -222,7 +232,7 @@ def main():
         nt.links.new(hair.outputs[0], out.inputs["Surface"])
     obj.data.materials.append(mat)
     if a.mesh:
-        print(f"[{a.tag}] skin mesh {add_skin(a.mesh, a.mesh_colors, a.mesh_roughness)} vertices", flush=True)
+        print(f"[{a.tag}] skin mesh {add_skin(a.mesh, a.mesh_colors, a.mesh_roughness, a.mesh_specular)} vertices", flush=True)
 
     # --- lighting (reused) ---
     world = bpy.data.worlds.new("w")
