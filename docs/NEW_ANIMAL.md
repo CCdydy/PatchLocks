@@ -106,17 +106,25 @@ instead of by eye:
    side-by-side comparisons with the photos the 90th percentile looked closer. With `SILHOUETTE_LENGTH_EXCLUDE=accessory` the pixels around a collar, which stands off
    the fur, are left out. In our tests two rounds brought the body and leg fur thickness to within
    a few millimetres of the photos'.
-7. Natural strand shape (Step 3c: `NATURALIZE_REGIONS=body,legs`). The grow stamps nearly
-   straight strands, and straight, equally thick strands read as straw, most of all in long fur
-   such as the hind legs' feathering. `patchlocks/deploy/naturalize_strands.py` curves each
-   strand back towards the skin (`NATURALIZE_DROOP`, 0.35 of its length at the tip), sways it
-   sideways (`NATURALIZE_SWAY`, 0.12), varies its length (+-15 %) and thins it
-   (`NATURALIZE_RADIUS_SCALE`, 0.35: the grow's radius is set to cover the skin, far thicker than
-   hair, and thick strands read as straw). Judge it with
+7. Strand shape from the diffusion (Step 3c: `NATURALIZE_REGIONS=body,legs`). The grow stamps one
+   primitive everywhere, synthesized from the statistics of a few of the straightest reliable
+   patches, so every strand comes out nearly straight, while the diffusion predicts for every
+   patch strands that bend and wave. `patchlocks/deploy/transfer_diffusion_shape.py` decodes each
+   patch's predicted strands from Step 1's latent maps, keeps the plausible ones (no loops or
+   hooks) as templates, and gives every grown strand the bend of a template from its patch while
+   it keeps its chord, so direction and reach still come from the multi-view fit and the
+   silhouette refinement; patches with too few plausible strands borrow from the nearest patch
+   that has enough. `STRAND_SHAPE_STRENGTH` (0.7) weights this prior against a straight strand.
+   In our renders it turned long, fluffy fur (the hind legs' feathering) from parallel bundles
+   into a soft, voluminous coat; at full strength smooth fur on the flanks got rough. The strands
+   are also thinned (`NATURALIZE_RADIUS_SCALE`, 0.35: the grow's radius is set to cover the skin,
+   far thicker than hair, and thick strands read as straw). `STRAND_SHAPE_SOURCE=rules` uses a
+   fixed curve towards the skin, sideways sway and length spread instead (`naturalize_strands.py`).
+   Judge the coat with
    `python patchlocks/qa/coat_texture_stats.py --data_dir <in>/nf_data --views <v,...> --renders <dir>/render_fur_{view}_raw.png`:
-   the local contrast of the coat (luminance spread in 9x9 windows) is a few times the photo's
-   while individual strands stand out; in our tests thinner strands and the render settings below
-   halved it. (`--undercoat_frac` adds an optional short, curly undercoat; its effect was small.)
+   while individual strands stand out, the local contrast of the coat (luminance spread in 9x9
+   windows) is a few times the photo's; thinner strands and the render settings below halved it.
+   It does not see whether long fur reads as bundles or as a soft mass, so look at the renders too.
 8. Where the coat is too thick or too thin: `python patchlocks/qa/fur_depth_map.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --regions <run>/v2_region_prior.annotated.npz --out_dir <run>/fur_depth`
    compares, per vertex, how far the fur reaches beyond the body in the photos and in the groom
    (median over the views that see the vertex on the outline), with a colour map. Step 3b matches

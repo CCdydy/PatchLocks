@@ -414,16 +414,27 @@ if [[ "$SIL_ITERS" -gt 0 ]]; then
   done
 fi
 
-# Step3c (optional, off by default): natural strand shape on the given regions (naturalize_strands.py):
-# each strand curves back towards the skin, sways sideways, varies in length and is thinner, so the
-# coat does not read as straw. Writes surfpack_v2fur_nat.npz next to the grow output and uses it.
+# Step3c (optional, off by default): strand shape on the given regions. The grow stamps one nearly
+# straight primitive everywhere; by default (STRAND_SHAPE_SOURCE=diffusion) every strand keeps its
+# chord (direction and reach from Step 2/3b) and takes the bend of a strand the diffusion predicted
+# for its patch (transfer_diffusion_shape.py; needs Step 1's latent maps), weighted by
+# STRAND_SHAPE_STRENGTH. STRAND_SHAPE_SOURCE=rules uses a fixed curve, sway and length spread
+# instead (naturalize_strands.py). Both thin the strands. Writes surfpack_v2fur_shaped.npz.
 if [[ -n "${NATURALIZE_REGIONS:-}" ]]; then
-  echo "== Step3c: natural strand shape (${NATURALIZE_REGIONS}) =="
-  "$PY" patchlocks/deploy/naturalize_strands.py --groom "$FUR" --region_prior "$REGION_PRIOR" \
-    --regions "$NATURALIZE_REGIONS" --droop "${NATURALIZE_DROOP:-0.35}" --sway "${NATURALIZE_SWAY:-0.12}" \
-    --length_jitter "${NATURALIZE_LENGTH_JITTER:-0.15}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.35}" \
-    --out "$GROW_OUT/surfpack_v2fur_nat.npz"
-  FUR="$GROW_OUT/surfpack_v2fur_nat.npz"
+  SHAPED="$GROW_OUT/surfpack_v2fur_shaped.npz"
+  if [[ "${STRAND_SHAPE_SOURCE:-diffusion}" == "diffusion" ]]; then
+    echo "== Step3c: diffusion strand shapes (${NATURALIZE_REGIONS}) =="
+    "$PY" patchlocks/deploy/transfer_diffusion_shape.py --groom "$FUR" --proposals "$PROPOSAL_NPZ" \
+      --surfpack "$PACK" --region_prior "$REGION_PRIOR" --regions "$NATURALIZE_REGIONS" \
+      --strength "${STRAND_SHAPE_STRENGTH:-0.7}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.35}" --out "$SHAPED"
+  else
+    echo "== Step3c: rule-based strand shape (${NATURALIZE_REGIONS}) =="
+    "$PY" patchlocks/deploy/naturalize_strands.py --groom "$FUR" --region_prior "$REGION_PRIOR" \
+      --regions "$NATURALIZE_REGIONS" --droop "${NATURALIZE_DROOP:-0.35}" --sway "${NATURALIZE_SWAY:-0.12}" \
+      --length_jitter "${NATURALIZE_LENGTH_JITTER:-0.15}" --radius_scale "${NATURALIZE_RADIUS_SCALE:-0.35}" \
+      --out "$SHAPED"
+  fi
+  FUR="$SHAPED"
 fi
 
 if [[ -n "$MESH" ]]; then
