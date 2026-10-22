@@ -120,11 +120,17 @@ instead of by eye:
    are also thinned (`NATURALIZE_RADIUS_SCALE`, 0.35: the grow's radius is set to cover the skin,
    far thicker than hair, and thick strands read as straw). `STRAND_SHAPE_SOURCE=rules` uses a
    fixed curve towards the skin, sideways sway and length spread instead (`naturalize_strands.py`).
+   Two options of the script that the pipeline does not use yet: `--assign texel` gives each
+   strand the prediction at its root (blended over the nearest texels) instead of a random one
+   from its patch, which keeps the waves and clumps that neighbouring texels share; and several
+   `--proposals` (Step 1 rerun with other `SEED` values) are averaged texel by texel, so bends the
+   runs contradict cancel instead of every bend being scaled by one fixed strength.
    Judge the coat with
    `python patchlocks/qa/coat_texture_stats.py --data_dir <in>/nf_data --views <v,...> --renders <dir>/render_fur_{view}_raw.png`:
    while individual strands stand out, the local contrast of the coat (luminance spread in 9x9
    windows) is a few times the photo's; thinner strands and the render settings below halved it.
-   It does not see whether long fur reads as bundles or as a soft mass, so look at the renders too.
+   It does not see whether long fur reads as bundles or as a soft mass, and a lower value does not
+   always look more real, so look at the renders too.
 8. Where the coat is too thick or too thin: `python patchlocks/qa/fur_depth_map.py --groom <run>/grow/surfpack_v2fur.npz --data_dir <in>/nf_data --regions <run>/v2_region_prior.annotated.npz --out_dir <run>/fur_depth`
    compares, per vertex, how far the fur reaches beyond the body in the photos and in the groom
    (median over the views that see the vertex on the outline), with a colour map. Step 3b matches
