@@ -164,8 +164,9 @@ only; the groom geometry is unchanged):
    `blender -b --factory-startup --python patchlocks/qa/render_groom_realcam.py -- --surfpack <run>/grow/surfpack_v2fur_photo.npz --matrices <in>/nf_data/3d_gaussian_splatting/GS_/cameras/30000_matrices.pkl --view <v> --W <w> --H <h> --out <dir> --tag fur --subsample 0 --srgb_colors --mesh <in>/furless_sub2.obj --mesh_colors <in>/appearance/albedo_sub2_srgb.npy --fur_shader fiber --light_rig camera --world_rgb 0.9,0.9,0.9 --world_strength 1.3 --key_scale 0.3 --view_transform Standard --exposure 0.8 --filter_width 2.5 --bounces 16`
    (`--mesh_roughness <r.npy>` and `--mesh_specular <s.npy>` give the skin a per-vertex roughness
    and specular level: glossy eyes, and a dark nose that does not mirror the bright, uniform world
-   (at the default specular level it turns grey); `--device cuda` if OptiX faults with an illegal
-   address on a dense groom.)
+   (at the default specular level it turns grey). OptiX builds the strands' acceleration structure
+   on the GPU, so a dense groom needs a fraction of the host memory it takes with `--device cuda`;
+   fall back to CUDA if OptiX faults with an illegal address.)
 
 Why these settings:
 

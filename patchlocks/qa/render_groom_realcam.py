@@ -158,7 +158,7 @@ def main():
 
     # --- subsample strands (preserve length: same indices if seed shared) ---
     d = np.load(a.surfpack, allow_pickle=True)
-    S = d["strands"].astype(np.float32)
+    S = np.asarray(d["strands"], np.float32)
     if abs(a.length_mul - 1.0) > 1e-8:
         S = S[:, :1] + (S - S[:, :1]) * a.length_mul
     radius = d["radius"].astype(np.float32).reshape(-1)
@@ -170,25 +170,34 @@ def main():
     if a.subsample > 0 and N0 > a.subsample:
         idx = np.sort(np.random.default_rng(a.seed).choice(N0, a.subsample, replace=False))
         S = S[idx]; radius = radius[idx]; color = color[idx]; color_tip = color_tip[idx]
+    S = np.ascontiguousarray(S)
     N, Lp, _ = S.shape
     arc = float(np.median(np.linalg.norm(np.diff(S, axis=1), axis=2).sum(1)))
     size = float(np.linalg.norm(S.reshape(-1, 3).max(0) - S.reshape(-1, 3).min(0)))
+    obj_ctr = S.reshape(-1, 3).mean(0)
     print(f"[{a.tag}] strands {N0}->{N} arc_median={arc:.5f} world_extent={size:.4f}", flush=True)
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
 
     # --- fur curves ---
+    # Poly curves: Cycles reads the control points either way, but Blender evaluates its default
+    # Catmull-Rom curves at 12 points per segment for the bounds, 12x the points in memory.
     cv = bpy.data.hair_curves.new("fur")
     cv.add_curves([Lp] * N)
-    cv.attributes["position"].data.foreach_set("vector", S.reshape(-1).astype(np.float32))
-    t = np.linspace(0, 1, Lp, dtype=np.float32)[None].repeat(N, 0)
-    rad = radius[:, None] * (1.0 - 0.82 * t) * a.radius_mul
-    cv.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", rad.reshape(-1).astype(np.float32))
-    tg = np.linspace(0, 1, Lp, dtype=np.float32)[None, :, None]
-    col_grad = color[:, None, :] * (1 - tg) + color_tip[:, None, :] * tg
-    cv.attributes.new("strand_col", "FLOAT_COLOR", "POINT").data.foreach_set(
-        "color", np.concatenate([col_grad, np.ones((N, Lp, 1), np.float32)], -1).reshape(-1).astype(np.float32))
+    cv.set_types(type="POLY")
+    cv.attributes["position"].data.foreach_set("vector", S.reshape(-1))
+    del S
+    t = np.linspace(0, 1, Lp, dtype=np.float32)[None]
+    rad = np.asarray(radius[:, None] * (1.0 - 0.82 * t) * a.radius_mul, np.float32)
+    cv.attributes.new("radius", "FLOAT", "POINT").data.foreach_set("value", rad.reshape(-1))
+    del rad
+    tg = t[..., None]
+    col_grad = np.ones((N, Lp, 4), np.float32)
+    np.multiply(color[:, None, :], 1 - tg, out=col_grad[..., :3])
+    col_grad[..., :3] += color_tip[:, None, :] * tg
+    cv.attributes.new("strand_col", "FLOAT_COLOR", "POINT").data.foreach_set("color", col_grad.reshape(-1))
+    del col_grad
     obj = bpy.data.objects.new("fur", cv)
     sc.collection.objects.link(obj)
 
@@ -254,7 +263,6 @@ def main():
     # --- camera (VERIFIED 0.00px vs project_row): basis from forward + world-up ---
     # rotation from the RQ decomposition: rows of _R are camera right, image-up (NDC y is up)
     # and forward; no assumption about the world's up axis, so any camera roll is handled
-    obj_ctr = S.reshape(-1, 3).mean(0)
     right, up, fwd = _R[0] / np.linalg.norm(_R[0]), _R[1] / np.linalg.norm(_R[1]), _R[2] / np.linalg.norm(_R[2])
     if np.dot(obj_ctr - C, fwd) < 0:
         fwd = -fwd
